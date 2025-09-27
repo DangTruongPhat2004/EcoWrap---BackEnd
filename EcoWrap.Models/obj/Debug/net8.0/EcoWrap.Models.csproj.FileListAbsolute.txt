@@ -1,0 +1,11 @@
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\bin\Debug\net8.0\EcoWrap.Models.deps.json
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\bin\Debug\net8.0\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\bin\Debug\net8.0\EcoWrap.Models.pdb
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.AssemblyInfoInputs.cache
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.AssemblyInfo.cs
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.csproj.CoreCompileInputs.cache
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\refint\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.pdb
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\ref\EcoWrap.Models.dll

@@ -1,0 +1,14 @@
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\bin\Debug\net8.0\EcoWrap.DAL.deps.json
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\bin\Debug\net8.0\EcoWrap.DAL.runtimeconfig.json
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\bin\Debug\net8.0\EcoWrap.DAL.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\bin\Debug\net8.0\EcoWrap.DAL.pdb
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.csproj.AssemblyReference.cache
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.GeneratedMSBuildEditorConfig.editorconfig
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.AssemblyInfoInputs.cache
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.AssemblyInfo.cs
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.csproj.CoreCompileInputs.cache
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\refint\EcoWrap.DAL.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.pdb
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.genruntimeconfig.cache
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\ref\EcoWrap.DAL.dll

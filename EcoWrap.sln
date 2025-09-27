@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoWrap.API", "EcoWrap.API\EcoWrap.API.csproj", "{316C91BD-8EB1-453A-B0B7-E382C520A529}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoWrap.BLL", "EcoWrap.BLL\EcoWrap.BLL.csproj", "{07E82C9E-67AB-4A43-9958-C6743B908FD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoWrap.DAL", "EcoWrap.DAL\EcoWrap.DAL.csproj", "{42557B36-AE2F-4C39-B2EE-1D4B5971DEEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoWrap.Models", "EcoWrap.Models\EcoWrap.Models.csproj", "{4581FA6D-3192-4D3D-9F51-48FB7D69928F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{316C91BD-8EB1-453A-B0B7-E382C520A529}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{316C91BD-8EB1-453A-B0B7-E382C520A529}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{316C91BD-8EB1-453A-B0B7-E382C520A529}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{316C91BD-8EB1-453A-B0B7-E382C520A529}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07E82C9E-67AB-4A43-9958-C6743B908FD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E82C9E-67AB-4A43-9958-C6743B908FD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E82C9E-67AB-4A43-9958-C6743B908FD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E82C9E-67AB-4A43-9958-C6743B908FD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42557B36-AE2F-4C39-B2EE-1D4B5971DEEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42557B36-AE2F-4C39-B2EE-1D4B5971DEEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42557B36-AE2F-4C39-B2EE-1D4B5971DEEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42557B36-AE2F-4C39-B2EE-1D4B5971DEEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4581FA6D-3192-4D3D-9F51-48FB7D69928F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4581FA6D-3192-4D3D-9F51-48FB7D69928F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4581FA6D-3192-4D3D-9F51-48FB7D69928F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4581FA6D-3192-4D3D-9F51-48FB7D69928F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54C40651-6A39-412C-91A3-00F6FD240262}
+	EndGlobalSection
+EndGlobal
