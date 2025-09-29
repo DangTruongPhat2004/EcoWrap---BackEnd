@@ -10,5 +10,6 @@ namespace EcoWrap.DAL.IRepositories
     public interface ICustomerRepository
     {
         Task AddAsync(Customer customer);
+        Task<Customer?> GetByUserIdAsync(int userId);
     }
 }

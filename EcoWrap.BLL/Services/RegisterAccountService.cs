@@ -34,10 +34,38 @@ namespace EcoWrap.BLL.Services
 
         public async Task<bool> RegisterAccountAsync(RegisterAccountRequest request)
         {
-            // 1. Kiểm tra tồn tại
-            var existedUser = await _userRepository.GetByUsernameOrEmailAsync(request.Username, request.Email);
-            if (existedUser != null)
-                return false;
+            // 1. Kiểm tra Email trùng
+            var existedUserByEmail = await _userRepository.GetByEmailAsync(request.Email);
+
+            if (existedUserByEmail != null)
+            {
+                if (existedUserByEmail.IsVerified)
+                {
+                    // Nếu email đã verify rồi => không cho đăng ký lại
+                    return false;
+                }
+                else
+                {
+                    // Nếu email tồn tại nhưng chưa verify => xóa account cũ để đăng ký lại
+                    _dbContext.Users.Remove(existedUserByEmail);
+
+                    // Xóa luôn bản ghi Customer liên quan (nếu có)
+                    var oldCustomer = await _customerRepository.GetByUserIdAsync(existedUserByEmail.UserId);
+                    if (oldCustomer != null)
+                    {
+                        _dbContext.Customers.Remove(oldCustomer);
+                    }
+
+                    // Xóa các bản ghi verification cũ
+                    var oldVerifications = await _verificationRepository.GetByUserIdAsync(existedUserByEmail.UserId);
+                    if (oldVerifications.Any())
+                    {
+                        _dbContext.EmailVerifications.RemoveRange(oldVerifications);
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
 
             // 2. Hash password bằng SHA256
             string hashedPassword = HashPasswordSHA256(request.Password);

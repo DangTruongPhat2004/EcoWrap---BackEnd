@@ -177,3 +177,4 @@ C:\My_Project\EXE\EcoWrap\EcoWrap.API\obj\Debug\net8.0\ref\EcoWrap.API.dll
 C:\My_Project\EXE\EcoWrap\EcoWrap.API\bin\Debug\net8.0\EcoWrap.Models.dll
 C:\My_Project\EXE\EcoWrap\EcoWrap.API\bin\Debug\net8.0\EcoWrap.Models.pdb
 C:\My_Project\EXE\EcoWrap\EcoWrap.API\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.API\obj\Debug\net8.0\EcoWrap.API.sourcelink.json

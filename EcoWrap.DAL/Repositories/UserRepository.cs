@@ -39,6 +39,12 @@ namespace EcoWrap.DAL.Repositories
                 .FirstOrDefaultAsync(u => u.Username == username || u.Email == email);
         }
 
+        public async Task<User?> GetVerifyEmailStatus(bool isVerified)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.IsVerified == isVerified);
+        }
+
         public async Task AddAsync(User user)
         {
             await _context.Users.AddAsync(user);

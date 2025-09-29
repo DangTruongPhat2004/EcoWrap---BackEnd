@@ -12,3 +12,4 @@ C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\refint\EcoWrap.DAL.dll
 C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.pdb
 C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.genruntimeconfig.cache
 C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\ref\EcoWrap.DAL.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.DAL\obj\Debug\net8.0\EcoWrap.DAL.sourcelink.json

@@ -15,3 +15,4 @@ C:\My_Project\EXE\EcoWrap\EcoWrap.BLL\obj\Debug\net8.0\EcoWrap.BLL.pdb
 C:\My_Project\EXE\EcoWrap\EcoWrap.BLL\obj\Debug\net8.0\ref\EcoWrap.BLL.dll
 C:\My_Project\EXE\EcoWrap\EcoWrap.BLL\bin\Debug\net8.0\EcoWrap.Models.dll
 C:\My_Project\EXE\EcoWrap\EcoWrap.BLL\bin\Debug\net8.0\EcoWrap.Models.pdb
+C:\My_Project\EXE\EcoWrap\EcoWrap.BLL\obj\Debug\net8.0\EcoWrap.BLL.sourcelink.json

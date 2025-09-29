@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcoWrap.DAL.Repositories
 {
@@ -21,6 +22,12 @@ namespace EcoWrap.DAL.Repositories
         {
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<Customer?> GetByUserIdAsync(int userId)
+        {
+            return await _context.Customers
+                .FirstOrDefaultAsync(c => c.UserId == userId);
         }
     }
 }

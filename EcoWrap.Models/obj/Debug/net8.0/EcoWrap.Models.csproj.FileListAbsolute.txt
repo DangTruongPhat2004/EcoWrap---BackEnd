@@ -9,3 +9,4 @@ C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.dll
 C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\refint\EcoWrap.Models.dll
 C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.pdb
 C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\ref\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.sourcelink.json
