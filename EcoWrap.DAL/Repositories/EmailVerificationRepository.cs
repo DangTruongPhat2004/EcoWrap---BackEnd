@@ -29,15 +29,23 @@ namespace EcoWrap.DAL.Repositories
                     ev.Expiration > DateTime.UtcNow
                 );
         }
+
         public async Task<IEnumerable<EmailVerification>> GetByUserIdAsync(int userId)
         {
             return await _context.EmailVerifications
                 .Where(v => v.UserId == userId)
                 .ToListAsync();
         }
+
         public async Task AddAsync(EmailVerification verification)
         {
             await _context.EmailVerifications.AddAsync(verification);
+        }
+
+        public async Task UpdateAsync(EmailVerification verification)
+        {
+            _context.EmailVerifications.Update(verification);
+            await _context.SaveChangesAsync();
         }
 
         public async Task MarkAsUsedAsync(EmailVerification verification)

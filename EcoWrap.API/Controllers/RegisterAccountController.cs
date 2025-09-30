@@ -16,7 +16,13 @@ namespace EcoWrap.API.Controllers
             _registerAccountService = registerAccountService;
         }
 
+        /// <summary>
+        /// Đăng ký tài khoản mới và gửi email xác nhận
+        /// </summary>
         [HttpPost("register")]
+        [ProducesResponseType(typeof(object), 201)]
+        [ProducesResponseType(typeof(object), 400)]
+        [ProducesResponseType(typeof(object), 409)]
         public async Task<IActionResult> Register([FromBody] RegisterAccountRequest request)
         {
             if (!ModelState.IsValid)
@@ -28,16 +34,19 @@ namespace EcoWrap.API.Controllers
             {
                 return Conflict(new
                 {
-                    message = "Đăng ký thất bại. Username hoặc Email đã tồn tại, hoặc có lỗi xảy ra."
+                    message = "Đăng ký thất bại. Email đã tồn tại hoặc có lỗi xảy ra."
                 });
             }
 
-            return Ok(new
-            {
-                message = "Đăng ký thành công. Vui lòng kiểm tra email để xác nhận tài khoản.",
-                email = request.Email,
-                username = request.Username
-            });
+            return CreatedAtAction(
+                nameof(Register),
+                new { email = request.Email },
+                new
+                {
+                    message = "Đăng ký thành công. Vui lòng kiểm tra email để xác nhận tài khoản.",
+                    email = request.Email,
+                    username = request.Username
+                });
         }
     }
 }

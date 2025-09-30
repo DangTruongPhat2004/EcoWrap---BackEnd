@@ -7,6 +7,8 @@ using EcoWrap.DAL.IRepositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
 
 namespace EcoWrap.API
 {
@@ -17,23 +19,23 @@ namespace EcoWrap.API
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddControllers();
 
-            // Add repositories to the container.
+            // Add repositories
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IRegisterAccountRepository, RegisterAccountRepository>();
             builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
             builder.Services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
-            // Add services to the container.
+            // Add services
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IRegisterAccountService, RegisterAccountService>();
             builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-            
-            
+            builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
+            builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
-            // Thêm Authentication với JWT
+            // JWT Authentication
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -50,17 +52,45 @@ namespace EcoWrap.API
                     };
                 });
 
-            // Thêm DbContext với connection string
+            // DbContext
             builder.Services.AddDbContext<EcoWrapDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Swagger
+            // Swagger + JWT
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "EcoWrap API", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Nhập vào: Bearer {token}"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+            });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Middleware pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -69,6 +99,7 @@ namespace EcoWrap.API
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication(); 
             app.UseAuthorization();
 
             app.MapControllers();

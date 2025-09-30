@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using EcoWrap.BLL.IServices;
 using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
-using EcoWrap.DAL.Repositories;
+using Microsoft.AspNetCore.Identity;
 
 namespace EcoWrap.BLL.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher)
         {
             _userRepository = userRepository;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
@@ -29,16 +29,28 @@ namespace EcoWrap.BLL.Services
             return await _userRepository.GetByIdAsync(id);
         }
 
-        public async Task CreateUserAsync(User user)
-        {
-            await _userRepository.AddAsync(user);
-            await _userRepository.SaveChangesAsync(); 
-        }
-
         public async Task UpdateUserAsync(User user)
         {
             await _userRepository.UpdateAsync(user);
-            await _userRepository.SaveChangesAsync();  
+            await _userRepository.SaveChangesAsync();
+        }
+
+        public async Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return false;
+
+            // Kiểm tra mật khẩu cũ
+            var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, oldPassword);
+            if (verifyResult == PasswordVerificationResult.Failed)
+                return false;
+
+            // Hash mật khẩu mới và cập nhật
+            user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task DeleteUserAsync(int id)

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
@@ -29,14 +26,20 @@ namespace EcoWrap.DAL.Repositories
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _context.Users.FindAsync(id);
+        }
+
         public async Task AddUserAsync(User user)
         {
             await _context.Users.AddAsync(user);
         }
 
-        public async Task UpdateUserAsync(User user)
+        public Task UpdateUserAsync(User user)
         {
             _context.Users.Update(user);
+            return Task.CompletedTask;
         }
 
         // Email Verification
@@ -51,14 +54,15 @@ namespace EcoWrap.DAL.Repositories
                 .FirstOrDefaultAsync(v =>
                     v.UserId == userId &&
                     v.VerificationCode == code &&
-                    v.IsUsed == false &&
-                    v.Expiration > DateTime.Now);
+                    !v.IsUsed &&
+                    v.Expiration > DateTime.UtcNow);
         }
 
-        public async Task MarkVerificationAsUsedAsync(EmailVerification verification)
+        public Task MarkVerificationAsUsedAsync(EmailVerification verification)
         {
             verification.IsUsed = true;
             _context.EmailVerifications.Update(verification);
+            return Task.CompletedTask;
         }
 
         public async Task SaveChangesAsync()

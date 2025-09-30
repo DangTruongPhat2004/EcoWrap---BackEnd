@@ -1,6 +1,6 @@
 ﻿using EcoWrap.BLL.IServices;
-using EcoWrap.BLL.Services;
 using EcoWrap.DAL.Entities;
+using EcoWrap.Models.Request;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EcoWrap.API.Controllers
@@ -31,20 +31,32 @@ namespace EcoWrap.API.Controllers
             return Ok(user);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(User user)
-        {
-            await _userService.CreateUserAsync(user);
-            return CreatedAtAction(nameof(GetById), new { id = user.UserId }, user);
-        }
-
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, User user)
+        public async Task<IActionResult> Update(int id, [FromBody] User user)
         {
             if (id != user.UserId) return BadRequest();
 
             await _userService.UpdateUserAsync(user);
             return NoContent();
+        }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var claim = User.FindFirst("id");
+            if (claim == null)
+            {
+                return Unauthorized(new { message = "Token không hợp lệ hoặc không có claim 'id'" });
+            }
+
+            var userId = int.Parse(claim.Value);
+
+            var success = await _userService.ChangePasswordAsync(userId, request.OldPassword, request.NewPassword);
+
+            if (!success)
+                return BadRequest(new { message = "Mật khẩu cũ không đúng." });
+
+            return Ok(new { message = "Đổi mật khẩu thành công." });
         }
 
         [HttpDelete("{id}")]

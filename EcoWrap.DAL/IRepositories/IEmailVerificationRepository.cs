@@ -12,6 +12,7 @@ namespace EcoWrap.DAL.IRepositories
         Task<EmailVerification?> GetByEmailAndCodeAsync(string email, string code);
         Task<IEnumerable<EmailVerification>> GetByUserIdAsync(int userId);
         Task AddAsync(EmailVerification verification);
+        Task UpdateAsync(EmailVerification verification);
         Task MarkAsUsedAsync(EmailVerification verification);
         Task<bool> IsEmailVerifiedAsync(int userId);
         Task<int> SaveChangesAsync();

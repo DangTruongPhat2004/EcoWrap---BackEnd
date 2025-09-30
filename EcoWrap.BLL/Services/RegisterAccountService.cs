@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using EcoWrap.BLL.IServices;
 using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
 using EcoWrap.Models.Request;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcoWrap.BLL.Services
@@ -16,20 +16,23 @@ namespace EcoWrap.BLL.Services
         private readonly ICustomerRepository _customerRepository;
         private readonly IEmailVerificationRepository _verificationRepository;
         private readonly IEmailService _emailService;
-        private readonly EcoWrapDbContext _dbContext; // để dùng transaction
+        private readonly EcoWrapDbContext _dbContext;
+        private readonly IPasswordHasher<User> _passwordHasher; // ✅ thay cho SHA256
 
         public RegisterAccountService(
             IUserRepository userRepository,
             ICustomerRepository customerRepository,
             IEmailVerificationRepository verificationRepository,
             IEmailService emailService,
-            EcoWrapDbContext dbContext)
+            EcoWrapDbContext dbContext,
+            IPasswordHasher<User> passwordHasher) // inject vào constructor
         {
             _userRepository = userRepository;
             _customerRepository = customerRepository;
             _verificationRepository = verificationRepository;
             _emailService = emailService;
             _dbContext = dbContext;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<bool> RegisterAccountAsync(RegisterAccountRequest request)
@@ -41,64 +44,51 @@ namespace EcoWrap.BLL.Services
             {
                 if (existedUserByEmail.IsVerified)
                 {
-                    // Nếu email đã verify rồi => không cho đăng ký lại
                     return false;
                 }
                 else
                 {
-                    // Nếu email tồn tại nhưng chưa verify => xóa account cũ để đăng ký lại
                     _dbContext.Users.Remove(existedUserByEmail);
 
-                    // Xóa luôn bản ghi Customer liên quan (nếu có)
                     var oldCustomer = await _customerRepository.GetByUserIdAsync(existedUserByEmail.UserId);
                     if (oldCustomer != null)
-                    {
                         _dbContext.Customers.Remove(oldCustomer);
-                    }
 
-                    // Xóa các bản ghi verification cũ
                     var oldVerifications = await _verificationRepository.GetByUserIdAsync(existedUserByEmail.UserId);
                     if (oldVerifications.Any())
-                    {
                         _dbContext.EmailVerifications.RemoveRange(oldVerifications);
-                    }
 
                     await _dbContext.SaveChangesAsync();
                 }
             }
 
-            // 2. Hash password bằng SHA256
-            string hashedPassword = HashPasswordSHA256(request.Password);
-
-            // 3. Tạo User entity (chưa verified)
+            // 2. Hash password bằng IPasswordHasher 
             var newUser = new User
             {
                 Username = request.Username,
-                PasswordHash = hashedPassword,
                 Email = request.Email,
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
                 RegistrationDate = DateTime.UtcNow,
                 IsVerified = false
             };
+            newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password);
 
-            // 4. Transaction
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                // 5. Lưu User
+                // 3. Lưu User
                 await _userRepository.AddAsync(newUser);
-                await _dbContext.SaveChangesAsync(); // để lấy UserId
-
-                // 6. Lưu Customer
-                var newCustomer = new Customer { UserId = newUser.UserId };
-                await _customerRepository.AddAsync(newCustomer);
                 await _dbContext.SaveChangesAsync();
 
-                // 7. Sinh mã xác nhận email (6 số)
+                // 4. Lưu Customer
+                var newCustomer = new Customer { UserId = newUser.UserId };
+                await _customerRepository.AddAsync(newCustomer);
+
+                // 5. Sinh mã xác nhận
                 var confirmCode = GenerateVerificationCode();
 
-                // 8. Lưu vào EmailVerifications
+                // 6. Lưu EmailVerification
                 var verification = new EmailVerification
                 {
                     UserId = newUser.UserId,
@@ -108,12 +98,12 @@ namespace EcoWrap.BLL.Services
                     CreatedAt = DateTime.UtcNow
                 };
                 await _verificationRepository.AddAsync(verification);
-                await _dbContext.SaveChangesAsync();
 
-                // 9. Commit transaction
+                // Save tất cả 1 lần
+                await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // 10. Gửi email xác nhận
+                // 7. Gửi email xác nhận
                 await _emailService.SendEmailAsync(
                     newUser.Email,
                     "EcoWrap - Email Verification",
@@ -132,20 +122,13 @@ namespace EcoWrap.BLL.Services
             }
         }
 
-        private string HashPasswordSHA256(string password)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(bytes);
-        }
-
         private string GenerateVerificationCode()
         {
             using var rng = RandomNumberGenerator.Create();
             var bytes = new byte[4];
             rng.GetBytes(bytes);
             int code = BitConverter.ToInt32(bytes, 0);
-            code = Math.Abs(code % 1000000); // 6 số
+            code = Math.Abs(code % 1000000);
             return code.ToString("D6");
         }
     }

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using EcoWrap.BLL.IServices;
+using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
 using EcoWrap.Models.Request;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,11 +17,16 @@ namespace EcoWrap.BLL.Services
     {
         private readonly IAuthenticationRepository _authRepository;
         private readonly IConfiguration _config;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public AuthenticationService(IAuthenticationRepository authRepository, IConfiguration config)
+        public AuthenticationService(
+            IAuthenticationRepository authRepository,
+            IConfiguration config,
+            IPasswordHasher<User> passwordHasher)
         {
             _authRepository = authRepository;
             _config = config;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<string?> LoginAsync(LoginRequest request)
@@ -34,13 +40,15 @@ namespace EcoWrap.BLL.Services
             if (!user.IsVerified)
                 throw new UnauthorizedAccessException("Email chưa được xác thực. Vui lòng xác nhận email trước khi đăng nhập.");
 
-            // 3. So sánh password hash
-            if (!VerifyPassword(request.Password, user.PasswordHash))
+            // 3. So sánh password hash bằng Identity PasswordHasher
+            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+            if (result == PasswordVerificationResult.Failed)
                 return null;
 
             // 4. Tạo JWT token
             var claims = new[]
             {
+                new Claim("id", user.UserId.ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email)
@@ -58,14 +66,6 @@ namespace EcoWrap.BLL.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        // Helper để verify password
-        private bool VerifyPassword(string password, string storedHash)
-        {
-            using var sha256 = SHA256.Create();
-            var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hash) == storedHash;
         }
     }
 }
