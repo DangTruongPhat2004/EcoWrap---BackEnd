@@ -19,6 +19,22 @@ namespace EcoWrap.API
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddControllers();
 
+            var DevCors = "DevCors";
+            builder.Services.AddCors(opt =>
+            {
+                opt.AddPolicy(DevCors, p =>
+                    p.WithOrigins(
+                        "http://localhost:5173",   // Vite dev
+                        "http://127.0.0.1:5173"
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    // Nếu FE không gửi cookie thì bỏ .AllowCredentials();
+                    // Nếu sau này có dùng cookie/CSRF => giữ .AllowCredentials() và KHÔNG dùng AllowAnyOrigin
+                    .AllowCredentials()
+                );
+            });
+
             // Add repositories
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IRegisterAccountRepository, RegisterAccountRepository>();
@@ -48,7 +64,7 @@ namespace EcoWrap.API
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
                     };
                 });
 
@@ -99,7 +115,9 @@ namespace EcoWrap.API
 
             app.UseHttpsRedirection();
 
-            app.UseAuthentication(); 
+            app.UseCors(DevCors);
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

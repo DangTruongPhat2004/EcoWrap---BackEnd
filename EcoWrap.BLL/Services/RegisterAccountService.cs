@@ -17,7 +17,7 @@ namespace EcoWrap.BLL.Services
         private readonly IEmailVerificationRepository _verificationRepository;
         private readonly IEmailService _emailService;
         private readonly EcoWrapDbContext _dbContext;
-        private readonly IPasswordHasher<User> _passwordHasher; // ✅ thay cho SHA256
+        private readonly IPasswordHasher<User> _passwordHasher;
 
         public RegisterAccountService(
             IUserRepository userRepository,
