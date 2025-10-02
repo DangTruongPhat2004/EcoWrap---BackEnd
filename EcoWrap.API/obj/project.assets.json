@@ -345,6 +345,25 @@
           }
         }
       },
+      "Microsoft.AspNetCore.OpenApi/8.0.8": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.OpenApi": "1.4.3"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.AspNetCore.OpenApi.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.AspNetCore.OpenApi.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "Microsoft.AspNetCore.WebUtilities/2.3.0": {
         "type": "package",
         "dependencies": {
@@ -2459,6 +2478,21 @@
         "lib/netstandard2.0/Microsoft.AspNetCore.Identity.xml",
         "microsoft.aspnetcore.identity.2.3.1.nupkg.sha512",
         "microsoft.aspnetcore.identity.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.OpenApi/8.0.8": {
+      "sha512": "wNHhohqP8rmsQ4UhKbd6jZMD6l+2Q/+DvRBT0Cgqeuglr13aF6sSJWicZKCIhZAUXzuhkdwtHVc95MlPlFk0dA==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.openapi/8.0.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net8.0/Microsoft.AspNetCore.OpenApi.dll",
+        "lib/net8.0/Microsoft.AspNetCore.OpenApi.xml",
+        "microsoft.aspnetcore.openapi.8.0.8.nupkg.sha512",
+        "microsoft.aspnetcore.openapi.nuspec"
       ]
     },
     "Microsoft.AspNetCore.WebUtilities/2.3.0": {
@@ -5802,6 +5836,7 @@
     "net8.0": [
       "EcoWrap.BLL >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 8.0.20",
+      "Microsoft.AspNetCore.OpenApi >= 8.0.8",
       "Microsoft.EntityFrameworkCore >= 9.0.9",
       "Microsoft.EntityFrameworkCore.SqlServer >= 9.0.9",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.9",
@@ -5809,23 +5844,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\ADMIN\\.nuget\\packages\\": {},
+    "C:\\Users\\DAT\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\My_Project\\EXE\\EcoWrap\\EcoWrap.API\\EcoWrap.API.csproj",
+      "projectUniqueName": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.API\\EcoWrap.API.csproj",
       "projectName": "EcoWrap.API",
-      "projectPath": "C:\\My_Project\\EXE\\EcoWrap\\EcoWrap.API\\EcoWrap.API.csproj",
-      "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
-      "outputPath": "C:\\My_Project\\EXE\\EcoWrap\\EcoWrap.API\\obj\\",
+      "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.API\\EcoWrap.API.csproj",
+      "packagesPath": "C:\\Users\\DAT\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\DAT\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -5840,8 +5875,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\My_Project\\EXE\\EcoWrap\\EcoWrap.BLL\\EcoWrap.BLL.csproj": {
-              "projectPath": "C:\\My_Project\\EXE\\EcoWrap\\EcoWrap.BLL\\EcoWrap.BLL.csproj"
+            "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj": {
+              "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj"
             }
           }
         }
@@ -5856,7 +5891,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -5865,6 +5900,10 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": {
             "target": "Package",
             "version": "[8.0.20, )"
+          },
+          "Microsoft.AspNetCore.OpenApi": {
+            "target": "Package",
+            "version": "[8.0.8, )"
           },
           "Microsoft.EntityFrameworkCore": {
             "target": "Package",
@@ -5904,7 +5943,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
