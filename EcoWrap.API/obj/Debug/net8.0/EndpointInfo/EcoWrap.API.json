@@ -49,6 +49,52 @@
         }
       }
     },
+    "/ai/kb/index": {
+      "post": {
+        "tags": [
+          "EcoWrap.API"
+        ],
+        "summary": "Index knowledge items into KB (with embeddings)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KbUpsertRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ai/chat-rag": {
+      "post": {
+        "tags": [
+          "EcoWrap.API"
+        ],
+        "summary": "Chat with RAG over EcoWrap KB",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RagChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/ai/chat": {
       "post": {
         "tags": [
@@ -756,6 +802,45 @@
         },
         "additionalProperties": false
       },
+      "KbUpsertItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KbUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KbUpsertItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "LoginRequest": {
         "type": "object",
         "properties": {
@@ -1075,6 +1160,27 @@
           },
           "seller": {
             "$ref": "#/components/schemas/Seller"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RagChatRequest": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "nullable": true
+          },
+          "k": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "system": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

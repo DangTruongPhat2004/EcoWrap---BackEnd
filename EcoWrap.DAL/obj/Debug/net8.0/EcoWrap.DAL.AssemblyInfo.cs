@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EcoWrap.DAL")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ea64453c055b1ca1ead0a4be5ee37e7f09dba330")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b61c20460cebfa8aafb54965ca9d4c91cf541e9f")]
 [assembly: System.Reflection.AssemblyProductAttribute("EcoWrap.DAL")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EcoWrap.DAL")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

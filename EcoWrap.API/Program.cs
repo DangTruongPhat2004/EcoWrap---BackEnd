@@ -1,15 +1,17 @@
 ﻿using System.Text;
 using System.Text.Json;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Linq;
-
 
 using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.Repositories;
-using EcoWrap.BLL.Services;
-using EcoWrap.BLL.IServices;
 using EcoWrap.DAL.IRepositories;
 
+using EcoWrap.BLL.Services;
+using EcoWrap.BLL.IServices;
+
+using EcoWrap.Models.AI;  // DTO: ChatRequest/ChatResponse/RagChatRequest/KbUpsertRequest
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
@@ -17,29 +19,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OpenApi;
 
+using AiChatRequest = EcoWrap.Models.AI.ChatRequest;
+using AiChatResponse = EcoWrap.Models.AI.ChatResponse;
+
 namespace EcoWrap.API
 {
-    // ===== DTOs cho Swagger =====
-    public sealed class ChatMessage
-    {
-        public string role { get; set; } = "user";   // "user" | "assistant"
-        public string content { get; set; } = "";
-    }
-
-    public sealed class ChatRequest
-    {
-        public List<ChatMessage> messages { get; set; } = new();
-    }
-
-    public sealed class ChatResponse
-    {
-        public string reply { get; set; } = "";
-        public bool? error { get; set; }
-        public string? message { get; set; }
-        public int? status { get; set; }
-        public string? detail { get; set; }
-    }
-
     public class Program
     {
         public static void Main(string[] args)
@@ -79,6 +63,7 @@ namespace EcoWrap.API
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
             builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            builder.Services.AddScoped<IEmbeddingService, EmbeddingService>(); // Embeddings
 
             // ===== JWT Auth =====
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -97,7 +82,7 @@ namespace EcoWrap.API
                     };
                 });
 
-            // ===== DbContext (đọc AIChatbotDB trong appsettings.json) =====
+            // ===== DbContext =====
             builder.Services.AddDbContext<EcoWrapDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("AIChatbotDB")));
 
@@ -133,7 +118,7 @@ namespace EcoWrap.API
                 });
             });
 
-            // ===== Gemini (Google AI Studio) HttpClient =====
+            // ===== Gemini HttpClient =====
             builder.Services.AddHttpClient("googleai", c =>
             {
                 c.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
@@ -156,7 +141,7 @@ namespace EcoWrap.API
 
             app.MapControllers();
 
-            // ===== GET /ai/models — liệt kê model mà API key có =====
+            // ===== GET /ai/models =====
             app.MapGet("/ai/models", async (IHttpClientFactory httpClientFactory, IConfiguration cfg) =>
             {
                 var key = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
@@ -174,21 +159,149 @@ namespace EcoWrap.API
                 return op;
             });
 
-            // ===== POST /ai/chat — proxy tới Gemini (auto-pick model hợp lệ) =====
+            // ===== POST /ai/kb/index — nạp tri thức vào KB =====
+            app.MapPost("/ai/kb/index",
+            async (KbUpsertRequest req, EcoWrapDbContext db, IEmbeddingService emb) =>
+            {
+                if (req?.items == null || req.items.Count == 0)
+                    return Results.BadRequest(new { error = true, message = "No items" });
+
+                int inserted = 0;
+                foreach (var it in req.items)
+                {
+                    var text = (it.text ?? "").Trim();
+                    if (text.Length == 0) continue;
+
+                    var sha = Sha256(text);
+                    var dup = db.Set<KbChunk>().FirstOrDefault(x => x.Sha256 == sha);
+                    if (dup != null) continue;
+
+                    var vec = await emb.EmbedAsync(text);
+                    db.Add(new KbChunk
+                    {
+                        Id = string.IsNullOrWhiteSpace(it.id) ? Guid.NewGuid().ToString("N") : it.id!,
+                        Title = it.title,
+                        Source = it.source,
+                        Tags = it.tags,
+                        Text = text,
+                        Embedding = vec,
+                        Sha256 = sha
+                    });
+                    inserted++;
+                }
+                await db.SaveChangesAsync();
+                return Results.Ok(new { inserted });
+
+                static string Sha256(string s)
+                {
+                    using var sha = SHA256.Create();
+                    return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(s)))
+                           .Replace("-", "").ToLowerInvariant();
+                }
+            })
+            .WithOpenApi(op => { op.Summary = "Index knowledge items into KB (with embeddings)"; return op; });
+
+            // ===== POST /ai/chat-rag — chat có RAG =====
+            app.MapPost("/ai/chat-rag",
+            async (RagChatRequest req,
+                   EcoWrapDbContext db,
+                   IEmbeddingService emb,
+                   IHttpClientFactory http,
+                   IConfiguration cfg) =>
+            {
+                var key = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
+                if (string.IsNullOrWhiteSpace(key))
+                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing GOOGLE_API_KEY" });
+
+                if (req?.messages == null || req.messages.Count == 0)
+                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing 'messages'" });
+
+                var lastUser = req.messages.LastOrDefault(m => (m.role ?? "user") != "assistant")?.content
+                               ?? req.messages.LastOrDefault()?.content ?? "";
+
+                var qvec = await emb.EmbedAsync(lastUser, "RETRIEVAL_QUERY");
+                var all = db.Set<KbChunk>().AsNoTracking().ToList();
+                var minScore = 0.28;
+                var scored = all.Where(x => x.Embedding != null)
+    .Select(x => new { item = x, score = IEmbeddingService.CosineSimilarity(qvec, x.Embedding!) })
+    .Where(x => x.score >= minScore)
+    .OrderByDescending(x => x.score)
+    .Take(Math.Max(3, Math.Min(req.k, 8)))
+    .ToList();
+
+                var ctx = string.Join("\n---\n", scored.Select((x, i) =>
+    $"[C{i + 1} | SCORE:{x.score:F3} | TITLE:{x.item.Title} | SOURCE:{x.item.Source}]\n{x.item.Text}"));
+
+                var system = req.system ?? "Bạn là EcoWrap AI – trợ lý bao bì thân thiện môi trường. Chỉ dùng NGỮ CẢNH để trả lời.";
+                var userAugmented = $@"
+# Nhiệm vụ
+Bạn là EcoWrap AI – trợ lý bao bì bền vững. Trả lời ngắn gọn, **Markdown đẹp**, chỉ dùng NGỮ CẢNH.
+
+# Câu hỏi
+{lastUser}
+
+# NGỮ CẢNH (Top-K | C# | SCORE | TITLE — SOURCE)
+{ctx}
+
+# YÊU CẦU ĐỊNH DẠNG
+- Mở đầu một dòng: **TL;DR:** <tóm tắt 1–2 câu>.
+- Sau đó 3–6 bullet **hành động** (mỗi bullet bắt đầu bằng động từ).
+- Kết thúc bằng mục **Nguồn trích dẫn** liệt kê các C# bạn đã dùng, format: `[C#, TITLE — SOURCE]`.
+- Không bịa ngoài ngữ cảnh; nếu thiếu dữ liệu, nêu rõ ""thiếu gì"".
+
+# Lưu ý phong cách
+- Tránh thuật ngữ khó; nêu rõ trade-off (chống dầu vs tái chế…).
+- Không lạm dụng số liệu trừ khi NGỮ CẢNH có.
+";
+
+                var client = http.CreateClient("googleai");
+                var model = "models/gemini-2.5-flash";
+                var payload = new
+                {
+                    contents = new object[] {
+                        new { role = "user", parts = new[]{ new { text = system } } },
+                        new { role = "user", parts = new[]{ new { text = userAugmented } } }
+                    }
+                };
+                var httpReq = new HttpRequestMessage(HttpMethod.Post, $"v1/{model}:generateContent?key={key}")
+                {
+                    Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
+                };
+                var res = await client.SendAsync(httpReq);
+                var text = await res.Content.ReadAsStringAsync();
+
+                if (!res.IsSuccessStatusCode)
+                    return Results.Json(new AiChatResponse { error = true, message = "Gemini error", status = (int)res.StatusCode, detail = text }, statusCode: 500);
+
+                using var json = JsonDocument.Parse(text);
+                string reply = "";
+                if (json.RootElement.TryGetProperty("candidates", out var cands) &&
+                    cands.ValueKind == JsonValueKind.Array && cands.GetArrayLength() > 0)
+                {
+                    var parts = cands[0].GetProperty("content").GetProperty("parts").EnumerateArray();
+                    foreach (var p in parts)
+                        if (p.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String) reply += t.GetString();
+                }
+                if (string.IsNullOrWhiteSpace(reply)) reply = "(Model không trả văn bản.)";
+                return Results.Ok(new AiChatResponse { reply = reply });
+            })
+            .WithOpenApi(op => { op.Summary = "Chat with RAG over EcoWrap KB"; return op; });
+
+            // ===== POST /ai/chat — proxy Gemini thường =====
             app.MapPost("/ai/chat",
-            async (ChatRequest req, IHttpClientFactory httpClientFactory, IConfiguration cfg) =>
+            async (AiChatRequest req, IHttpClientFactory httpClientFactory, IConfiguration cfg) =>
             {
                 var googleApiKey = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
                 if (string.IsNullOrWhiteSpace(googleApiKey))
-                    return Results.BadRequest(new ChatResponse { error = true, message = "Missing GOOGLE_API_KEY (GoogleAI:ApiKey)." });
+                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing GOOGLE_API_KEY (GoogleAI:ApiKey)." });
 
                 if (req?.messages == null || req.messages.Count == 0)
-                    return Results.BadRequest(new ChatResponse { error = true, message = "Missing 'messages' array" });
+                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing 'messages' array" });
 
-                // Map sang schema Gemini
+                // Map sang schema Gemini (assistant -> model; còn lại là user)
                 var contents = req.messages.Select(m => new
                 {
-                    role = (m.role == "customer") ? "model" : "user",
+                    role = (m.role == "assistant") ? "model" : "user",
                     parts = new[] { new { text = m.content ?? "" } }
                 });
 
@@ -196,46 +309,28 @@ namespace EcoWrap.API
 
                 var client = httpClientFactory.CreateClient("googleai");
 
-                // --- Chọn model hợp lệ dựa trên danh sách key có ---
                 var preferences = new[]
- {
-    "models/gemini-2.5-flash",
-    "models/gemini-2.5-pro",
-    "models/gemini-2.5-flash-lite",
-    "models/gemini-2.0-flash",
-    "models/gemini-2.0-flash-001",
-    "models/gemini-2.0-flash-lite",
-    "models/gemini-2.0-flash-lite-001"
-
-};
-
+                {
+                    "models/gemini-2.5-flash",
+                    "models/gemini-2.5-pro",
+                    "models/gemini-2.5-flash-lite",
+                    "models/gemini-2.0-flash",
+                    "models/gemini-2.0-flash-001",
+                    "models/gemini-2.0-flash-lite",
+                    "models/gemini-2.0-flash-lite-001"
+                };
 
                 string chosen = preferences[0];
                 try
                 {
                     var listRes = await client.GetAsync($"v1/models?key={googleApiKey}");
                     var listText = await listRes.Content.ReadAsStringAsync();
-
-                    using var listJson = JsonDocument.Parse(listText);
-                    if (listJson.RootElement.TryGetProperty("models", out var arr) &&
-                        arr.ValueKind == JsonValueKind.Array)
-                    {
-                        var names = arr.EnumerateArray()
-                                       .Select(m => m.GetProperty("name").GetString() ?? "")
-                                       .ToHashSet(StringComparer.Ordinal);
-
-                        foreach (var m in preferences)
-                            if (names.Contains(m)) { chosen = m; break; }
-                    }
                 }
-                catch
-                {
-                    // nếu parse lỗi hoặc gọi list thất bại, dùng mặc định
-                }
+                catch { /* ignore; dùng mặc định */ }
 
                 var httpReq = new HttpRequestMessage(
                     HttpMethod.Post,
-                    $"v1/{chosen}:generateContent?key={googleApiKey}") // Lưu ý: phải có prefix "models/..."
+                    $"v1/{chosen}:generateContent?key={googleApiKey}")
                 {
                     Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
                 };
@@ -247,7 +342,7 @@ namespace EcoWrap.API
 
                     if (!res.IsSuccessStatusCode)
                     {
-                        return Results.Json(new ChatResponse
+                        return Results.Json(new AiChatResponse
                         {
                             error = true,
                             message = "Gemini error",
@@ -259,14 +354,12 @@ namespace EcoWrap.API
                     using var json = JsonDocument.Parse(text);
                     string reply = "";
 
-                    // 1) Lấy candidate đầu
                     if (json.RootElement.TryGetProperty("candidates", out var cands) &&
                         cands.ValueKind == JsonValueKind.Array &&
                         cands.GetArrayLength() > 0)
                     {
                         var first = cands[0];
 
-                        // 1a) Nếu bị chặn bởi safety → trả message rõ ràng
                         if (first.TryGetProperty("finishReason", out var fr) &&
                             fr.ValueKind == JsonValueKind.String &&
                             fr.GetString()?.Equals("SAFETY", StringComparison.OrdinalIgnoreCase) == true)
@@ -274,7 +367,7 @@ namespace EcoWrap.API
                             var reason = "Trả lời bị chặn bởi bộ lọc an toàn của model.";
                             if (first.TryGetProperty("safetyRatings", out var sr))
                                 reason += " (safetyRatings present)";
-                            return Results.Json(new ChatResponse
+                            return Results.Json(new AiChatResponse
                             {
                                 error = true,
                                 message = "Safety blocked",
@@ -282,7 +375,6 @@ namespace EcoWrap.API
                             }, statusCode: 400);
                         }
 
-                        // 1b) Gom tất cả phần text trong parts
                         if (first.TryGetProperty("content", out var content) &&
                             content.TryGetProperty("parts", out var parts) &&
                             parts.ValueKind == JsonValueKind.Array)
@@ -295,27 +387,23 @@ namespace EcoWrap.API
                                 }
                                 else if (p.TryGetProperty("executableCode", out var codeObj) && codeObj.TryGetProperty("code", out var codeVal))
                                 {
-                                    // một số model có thể trả code block
                                     reply += "```\n" + (codeVal.GetString() ?? "") + "\n```\n";
                                 }
                                 else if (p.TryGetProperty("functionCall", out var fc) && fc.TryGetProperty("name", out var fname))
                                 {
                                     reply += $"[Function call: {fname.GetString()}]\n";
                                 }
-                                // Có thể bổ sung các kiểu parts khác nếu bạn dùng tool-calls...
                             }
                         }
                     }
 
-                    // 2) Nếu vẫn rỗng, thử đoán nguyên nhân
                     if (string.IsNullOrWhiteSpace(reply))
                     {
-                        // promptFeedback: thông tin block ở cấp request
                         if (json.RootElement.TryGetProperty("promptFeedback", out var pf) &&
                             pf.TryGetProperty("blockReason", out var br) &&
                             br.ValueKind == JsonValueKind.String)
                         {
-                            return Results.Json(new ChatResponse
+                            return Results.Json(new AiChatResponse
                             {
                                 error = true,
                                 message = "Prompt bị chặn",
@@ -326,12 +414,12 @@ namespace EcoWrap.API
                         reply = "(Model không trả văn bản. Có thể bị safety-filter hoặc format parts khác.)";
                     }
 
-                    return Results.Ok(new ChatResponse { reply = reply });
+                    return Results.Ok(new AiChatResponse { reply = reply });
 
                 }
                 catch (Exception ex)
                 {
-                    return Results.Json(new ChatResponse
+                    return Results.Json(new AiChatResponse
                     {
                         error = true,
                         message = "Server error",
@@ -339,10 +427,10 @@ namespace EcoWrap.API
                     }, statusCode: 500);
                 }
             })
-            .Accepts<ChatRequest>("application/json")
-            .Produces<ChatResponse>(StatusCodes.Status200OK)
-            .Produces<ChatResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ChatResponse>(StatusCodes.Status500InternalServerError)
+            .Accepts<AiChatRequest>("application/json")
+            .Produces<AiChatResponse>(StatusCodes.Status200OK)
+            .Produces<AiChatResponse>(StatusCodes.Status400BadRequest)
+            .Produces<AiChatResponse>(StatusCodes.Status500InternalServerError)
             .WithOpenApi(op =>
             {
                 op.Summary = "Proxy Gemini chat (Google AI Studio)";
