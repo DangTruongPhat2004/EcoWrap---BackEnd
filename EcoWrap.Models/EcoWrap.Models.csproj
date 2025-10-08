@@ -10,5 +10,7 @@
     <Folder Include="NewFolder1\" />
     <Folder Include="NewFolder\" />
   </ItemGroup>
-
+	<ItemGroup>
+		<ProjectReference Include="..\EcoWrap.DAL\EcoWrap.DAL.csproj" />
+	</ItemGroup>
 </Project>

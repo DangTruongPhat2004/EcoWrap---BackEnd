@@ -1,12 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "RFuCmyqQWno3Xz7lavpJpb1xV4GrlBcEeC+W7j4XpeA=",
-  "Source": "EcoWrap.API",
-  "BasePath": "_content/EcoWrap.API",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": [],
-  "Endpoints": []
-}
+{"Version":1,"Hash":"RFuCmyqQWno3Xz7lavpJpb1xV4GrlBcEeC+W7j4XpeA=","Source":"EcoWrap.API","BasePath":"_content/EcoWrap.API","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

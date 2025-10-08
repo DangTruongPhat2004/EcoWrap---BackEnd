@@ -11,7 +11,7 @@ using EcoWrap.DAL.IRepositories;
 using EcoWrap.BLL.Services;
 using EcoWrap.BLL.IServices;
 
-using EcoWrap.Models.AI;  // DTO: ChatRequest/ChatResponse/RagChatRequest/KbUpsertRequest
+using EcoWrap.Models.AI; // DTO: ChatRequest/ChatResponse/RagChatRequest/KbUpsertRequest
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
@@ -21,6 +21,12 @@ using Microsoft.AspNetCore.OpenApi;
 
 using AiChatRequest = EcoWrap.Models.AI.ChatRequest;
 using AiChatResponse = EcoWrap.Models.AI.ChatResponse;
+
+
+using EcoWrap.API.Realtime;
+
+using EcoWrap.BLL.Services.Chat;
+using EcoWrap.DAL.Repositories.Chat;
 
 namespace EcoWrap.API
 {
@@ -80,7 +86,35 @@ namespace EcoWrap.API
                         IssuerSigningKey = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? ""))
                     };
+
+                    // ✅ THIS IS THE FIX FOR SIGNALR AUTHENTICATION
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            // If the request is for our hub...
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (path.StartsWithSegments("/hubs/chat"))) // Must match your app.MapHub path
+                            {
+                                // Read the token from the query string
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
+
+
+            builder.Services.AddControllers()
+                .AddJsonOptions(o =>
+                    o.JsonSerializerOptions.Converters.Add(
+                        new System.Text.Json.Serialization.JsonStringEnumConverter()
+                    )
+                );
+
 
             // ===== DbContext =====
             builder.Services.AddDbContext<EcoWrapDbContext>(options =>
@@ -117,6 +151,28 @@ namespace EcoWrap.API
                     }
                 });
             });
+            // ======= Chat ///////
+
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<IChatBus, ChatBus>();
+            // Note: You have a second AddCors call here. It's better to combine them,
+            // but this won't break anything. The `.RequireCors("chat")` on the hub endpoint will use this one.
+            builder.Services.AddCors(opt =>
+            {
+                opt.AddPolicy("chat", p => p
+                    .WithOrigins("http://localhost:5173", "http://localhost:3000")
+                    .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+            });
+
+            // Repositories
+            builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+            builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+
+            // Services
+            builder.Services.AddScoped<IConversationService, ConversationService>();
+            builder.Services.AddScoped<IMessageService, MessageService>();
+
+
 
             // ===== Gemini HttpClient =====
             builder.Services.AddHttpClient("googleai", c =>
@@ -126,6 +182,10 @@ namespace EcoWrap.API
             });
 
             var app = builder.Build();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage(); // show stacktrace trong browser
+            }
 
             // ===== Middleware =====
             if (app.Environment.IsDevelopment())
@@ -135,11 +195,21 @@ namespace EcoWrap.API
             }
 
             app.UseHttpsRedirection();
+
+            // Use the general DevCors policy first
             app.UseCors(DevCors);
+
+            // Authentication middleware must come before Authorization
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
+
+            // The 'chat' CORS policy is applied specifically to this endpoint
+            app.MapHub<ChatHub>("/hubs/chat").RequireCors("chat");
+
+
+
 
             // ===== GET /ai/models =====
             app.MapGet("/ai/models", async (IHttpClientFactory httpClientFactory, IConfiguration cfg) =>
@@ -149,7 +219,7 @@ namespace EcoWrap.API
                     return Results.BadRequest(new { error = true, message = "Missing GOOGLE_API_KEY" });
 
                 var client = httpClientFactory.CreateClient("googleai");
-                var res = await client.GetAsync($"v1/models?key={key}");
+                var res = await client.GetAsync($"v1beta/models?key={key}");
                 var text = await res.Content.ReadAsStringAsync();
                 return Results.Text(text, "application/json");
             })
@@ -196,7 +266,7 @@ namespace EcoWrap.API
                 {
                     using var sha = SHA256.Create();
                     return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(s)))
-                           .Replace("-", "").ToLowerInvariant();
+                            .Replace("-", "").ToLowerInvariant();
                 }
             })
             .WithOpenApi(op => { op.Summary = "Index knowledge items into KB (with embeddings)"; return op; });
@@ -204,10 +274,10 @@ namespace EcoWrap.API
             // ===== POST /ai/chat-rag — chat có RAG =====
             app.MapPost("/ai/chat-rag",
             async (RagChatRequest req,
-                   EcoWrapDbContext db,
-                   IEmbeddingService emb,
-                   IHttpClientFactory http,
-                   IConfiguration cfg) =>
+                    EcoWrapDbContext db,
+                    IEmbeddingService emb,
+                    IHttpClientFactory http,
+                    IConfiguration cfg) =>
             {
                 var key = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
                 if (string.IsNullOrWhiteSpace(key))
@@ -217,7 +287,7 @@ namespace EcoWrap.API
                     return Results.BadRequest(new AiChatResponse { error = true, message = "Missing 'messages'" });
 
                 var lastUser = req.messages.LastOrDefault(m => (m.role ?? "user") != "assistant")?.content
-                               ?? req.messages.LastOrDefault()?.content ?? "";
+                                        ?? req.messages.LastOrDefault()?.content ?? "";
 
                 var qvec = await emb.EmbedAsync(lastUser, "RETRIEVAL_QUERY");
                 var all = db.Set<KbChunk>().AsNoTracking().ToList();
@@ -255,6 +325,7 @@ Bạn là EcoWrap AI – trợ lý bao bì bền vững. Trả lời ngắn gọ
 ";
 
                 var client = http.CreateClient("googleai");
+                var apiVersion = "v1";
                 var model = "models/gemini-2.5-flash";
                 var payload = new
                 {
@@ -263,7 +334,10 @@ Bạn là EcoWrap AI – trợ lý bao bì bền vững. Trả lời ngắn gọ
                         new { role = "user", parts = new[]{ new { text = userAugmented } } }
                     }
                 };
-                var httpReq = new HttpRequestMessage(HttpMethod.Post, $"v1/{model}:generateContent?key={key}")
+                var httpReq = new HttpRequestMessage(
+     HttpMethod.Post,
+     $"{apiVersion}/{model}:generateContent?key={key}"
+ )
                 {
                     Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
                 };
@@ -308,29 +382,11 @@ Bạn là EcoWrap AI – trợ lý bao bì bền vững. Trả lời ngắn gọ
                 var payload = new { contents };
 
                 var client = httpClientFactory.CreateClient("googleai");
-
-                var preferences = new[]
-                {
-                    "models/gemini-2.5-flash",
-                    "models/gemini-2.5-pro",
-                    "models/gemini-2.5-flash-lite",
-                    "models/gemini-2.0-flash",
-                    "models/gemini-2.0-flash-001",
-                    "models/gemini-2.0-flash-lite",
-                    "models/gemini-2.0-flash-lite-001"
-                };
-
-                string chosen = preferences[0];
-                try
-                {
-                    var listRes = await client.GetAsync($"v1/models?key={googleApiKey}");
-                    var listText = await listRes.Content.ReadAsStringAsync();
-                }
-                catch { /* ignore; dùng mặc định */ }
+                var model = "models/gemini-2.5-flash"; // Default model
 
                 var httpReq = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    $"v1/{chosen}:generateContent?key={googleApiKey}")
+    HttpMethod.Post,
+    $"v1/{model}:generateContent?key={googleApiKey}")
                 {
                     Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
                 };

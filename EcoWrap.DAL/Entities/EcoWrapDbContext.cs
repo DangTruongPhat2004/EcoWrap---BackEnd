@@ -32,7 +32,12 @@ public partial class EcoWrapDbContext : DbContext
     public virtual DbSet<Warehouse> Warehouses { get; set; }
     public virtual DbSet<EmailVerification> EmailVerifications { get; set; }
 
-  
+    // Chat DbSets
+    public virtual DbSet<Conversation> Conversations { get; set; }
+    public virtual DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+    public virtual DbSet<Message> Messages { get; set; }
+    public virtual DbSet<MessageReceipt> MessageReceipts { get; set; }
+
     public virtual DbSet<KbChunk> KbChunks { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -68,11 +73,9 @@ public partial class EcoWrapDbContext : DbContext
         modelBuilder.Entity<CarbonFootprint>(entity =>
         {
             entity.HasKey(e => e.CarbonId).HasName("PK__CarbonFo__7D72AC77D408BC31");
-
             entity.HasOne(d => d.Product).WithMany(p => p.CarbonFootprints)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CarbonFootprint_Product");
-
             entity.HasOne(d => d.Warehouse).WithMany(p => p.CarbonFootprints)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CarbonFootprint_Warehouse");
@@ -230,6 +233,52 @@ public partial class EcoWrapDbContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EmailVerifications_Users");
+        });
+
+        modelBuilder.Entity<Conversation>(b =>
+        {
+            b.ToTable("Conversations");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.LastMessagePreview).HasMaxLength(200);
+            b.HasIndex(x => x.LastMessageAt);
+        });
+
+        modelBuilder.Entity<ConversationParticipant>(b =>
+        {
+            b.ToTable("ConversationParticipants");
+            b.HasKey(x => new { x.ConversationId, x.UserId });
+            b.Property(x => x.Role).HasConversion<string>().HasMaxLength(20);
+            b.HasOne(x => x.Conversation)
+                .WithMany(c => c.Participants)
+                .HasForeignKey(x => x.ConversationId);
+            b.HasOne(x => x.User)
+                .WithMany() // nếu User có navigation thì thay cho phù hợp
+                .HasForeignKey(x => x.UserId);
+        });
+
+        modelBuilder.Entity<Message>(b =>
+        {
+            b.ToTable("Messages");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.ContentType).HasConversion<string>().HasMaxLength(30);
+            b.Property(x => x.AttachmentUrl).HasMaxLength(500);
+            b.Property(x => x.AttachmentName).HasMaxLength(255);
+            b.HasIndex(x => new { x.ConversationId, x.CreatedAt });
+            b.HasOne(x => x.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(x => x.ConversationId);
+        });
+
+        modelBuilder.Entity<MessageReceipt>(b =>
+        {
+            b.ToTable("MessageReceipts");
+            b.HasKey(x => new { x.MessageId, x.UserId });
+            b.HasOne(x => x.Message)
+                .WithMany(m => m.Receipts)
+                .HasForeignKey(x => x.MessageId);
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId);
         });
 
         OnModelCreatingPartial(modelBuilder);

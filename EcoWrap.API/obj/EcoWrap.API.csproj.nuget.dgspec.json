@@ -300,7 +300,11 @@
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj": {
+                "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

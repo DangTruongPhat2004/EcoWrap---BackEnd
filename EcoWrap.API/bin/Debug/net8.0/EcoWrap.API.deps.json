@@ -1360,6 +1360,9 @@
         }
       },
       "EcoWrap.Models/1.0.0": {
+        "dependencies": {
+          "EcoWrap.DAL": "1.0.0"
+        },
         "runtime": {
           "EcoWrap.Models.dll": {
             "assemblyVersion": "1.0.0.0",
