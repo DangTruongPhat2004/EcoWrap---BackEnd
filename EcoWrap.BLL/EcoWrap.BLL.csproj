@@ -11,6 +11,11 @@
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\EcoWrap.Models\EcoWrap.Models.csproj" />
+    <PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
+    <PackageReference Include="FirebaseAdmin" Version="3.4.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.71.0" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.71.0.3905" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
 	  <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
   </ItemGroup>
 

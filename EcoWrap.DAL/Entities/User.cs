@@ -55,6 +55,9 @@ public partial class User
     public virtual ICollection<Seller> Sellers { get; set; } = new List<Seller>();
 
     [InverseProperty("User")]
+    public virtual ICollection<Admin> Admins { get; set; } = new List<Admin>();
+
+    [InverseProperty("User")]
     public virtual ICollection<EmailVerification> EmailVerifications { get; set; } = new List<EmailVerification>();
 
 }

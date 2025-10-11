@@ -6,3 +6,4 @@ obj/
 .vscode/
 appsettings.Development.json
 /EcoWrap.Api/appsettings.json
+Firebase/serviceAccountKey.json

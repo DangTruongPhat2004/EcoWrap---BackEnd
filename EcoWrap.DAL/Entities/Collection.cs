@@ -16,7 +16,6 @@ public partial class Collection
     public int CustomerId { get; set; }
 
     [Column("Design_file")]
-    [Unicode(false)]
     public string? DesignFile { get; set; }
 
     [Column("Created_date", TypeName = "datetime")]

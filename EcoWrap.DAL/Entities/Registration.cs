@@ -11,9 +11,7 @@ public partial class Registration
 {
     [Key]
     [Column("Registration_id")]
-    [StringLength(10)]
-    [Unicode(false)]
-    public string RegistrationId { get; set; } = null!;
+    public int RegistrationId { get; set; } 
 
     [Column("User_id")]
     public int UserId { get; set; }
@@ -32,7 +30,6 @@ public partial class Registration
     public string? CompanyPhone { get; set; }
 
     [Column("Personal_id_image")]
-    [Unicode(false)]
     public string? PersonalIdImage { get; set; }
 
     [Column("License_id")]
@@ -41,7 +38,6 @@ public partial class Registration
     public string? LicenseId { get; set; }
 
     [Column("Document_path")]
-    [Unicode(false)]
     public string? DocumentPath { get; set; }
 
     [Column("Requested_date", TypeName = "datetime")]

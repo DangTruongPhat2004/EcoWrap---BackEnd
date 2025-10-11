@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.API\\EcoWrap.API.csproj": {}
+    "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.API\\EcoWrap.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.API\\EcoWrap.API.csproj": {
+    "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.API\\EcoWrap.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.API\\EcoWrap.API.csproj",
+        "projectUniqueName": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.API\\EcoWrap.API.csproj",
         "projectName": "EcoWrap.API",
-        "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.API\\EcoWrap.API.csproj",
-        "packagesPath": "C:\\Users\\DAT\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.API\\obj\\",
+        "projectPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.API\\EcoWrap.API.csproj",
+        "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
+        "outputPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\DAT\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -32,8 +32,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj": {
-                "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj"
+              "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.BLL\\EcoWrap.BLL.csproj": {
+                "projectPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.BLL\\EcoWrap.BLL.csproj"
               }
             }
           }
@@ -48,12 +48,32 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.8, )"
+            },
+            "FirebaseAdmin": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "Google.Apis.Auth": {
+              "target": "Package",
+              "version": "[1.71.0, )"
+            },
+            "Google.Apis.Drive.v3": {
+              "target": "Package",
+              "version": "[1.71.0.3905, )"
+            },
+            "Google.Cloud.Storage.V1": {
+              "target": "Package",
+              "version": "[4.13.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.20, )"
@@ -100,24 +120,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj": {
+    "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.BLL\\EcoWrap.BLL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj",
+        "projectUniqueName": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.BLL\\EcoWrap.BLL.csproj",
         "projectName": "EcoWrap.BLL",
-        "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj",
-        "packagesPath": "C:\\Users\\DAT\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\obj\\",
+        "projectPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.BLL\\EcoWrap.BLL.csproj",
+        "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
+        "outputPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.BLL\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\DAT\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -132,11 +152,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj": {
-                "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj"
+              "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.DAL\\EcoWrap.DAL.csproj": {
+                "projectPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.DAL\\EcoWrap.DAL.csproj"
               },
-              "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Models\\EcoWrap.Models.csproj": {
-                "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Models\\EcoWrap.Models.csproj"
+              "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.Models\\EcoWrap.Models.csproj": {
+                "projectPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.Models\\EcoWrap.Models.csproj"
               }
             }
           }
@@ -151,12 +171,32 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.8, )"
+            },
+            "FirebaseAdmin": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "Google.Apis.Auth": {
+              "target": "Package",
+              "version": "[1.71.0, )"
+            },
+            "Google.Apis.Drive.v3": {
+              "target": "Package",
+              "version": "[1.71.0.3905, )"
+            },
+            "Google.Cloud.Storage.V1": {
+              "target": "Package",
+              "version": "[4.13.0, )"
+            },
             "Microsoft.Extensions.Http": {
               "target": "Package",
               "version": "[8.0.0, )"
@@ -178,24 +218,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj": {
+    "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.DAL\\EcoWrap.DAL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj",
+        "projectUniqueName": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.DAL\\EcoWrap.DAL.csproj",
         "projectName": "EcoWrap.DAL",
-        "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj",
-        "packagesPath": "C:\\Users\\DAT\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\obj\\",
+        "projectPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.DAL\\EcoWrap.DAL.csproj",
+        "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
+        "outputPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.DAL\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\DAT\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -209,7 +249,11 @@
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.Models\\EcoWrap.Models.csproj": {
+                "projectPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.Models\\EcoWrap.Models.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -222,12 +266,32 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.8, )"
+            },
+            "FirebaseAdmin": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "Google.Apis.Auth": {
+              "target": "Package",
+              "version": "[1.71.0, )"
+            },
+            "Google.Apis.Drive.v3": {
+              "target": "Package",
+              "version": "[1.71.0.3905, )"
+            },
+            "Google.Cloud.Storage.V1": {
+              "target": "Package",
+              "version": "[4.13.0, )"
+            },
             "Microsoft.AspNetCore.Identity": {
               "target": "Package",
               "version": "[2.3.1, )"
@@ -269,24 +333,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Models\\EcoWrap.Models.csproj": {
+    "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.Models\\EcoWrap.Models.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Models\\EcoWrap.Models.csproj",
+        "projectUniqueName": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.Models\\EcoWrap.Models.csproj",
         "projectName": "EcoWrap.Models",
-        "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Models\\EcoWrap.Models.csproj",
-        "packagesPath": "C:\\Users\\DAT\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Models\\obj\\",
+        "projectPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.Models\\EcoWrap.Models.csproj",
+        "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
+        "outputPath": "C:\\My_Project\\EXE\\EcoWrap---BackEnd\\EcoWrap.Models\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\DAT\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -313,11 +377,41 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.8, )"
+            },
+            "FirebaseAdmin": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
+            "Google.Apis.Auth": {
+              "target": "Package",
+              "version": "[1.71.0, )"
+            },
+            "Google.Apis.Drive.v3": {
+              "target": "Package",
+              "version": "[1.71.0.3905, )"
+            },
+            "Google.Cloud.Storage.V1": {
+              "target": "Package",
+              "version": "[4.13.0, )"
+            },
+            "Microsoft.AspNetCore.Http.Abstractions": {
+              "target": "Package",
+              "version": "[2.3.0, )"
+            },
+            "Microsoft.AspNetCore.Http.Extensions": {
+              "target": "Package",
+              "version": "[2.3.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -334,7 +428,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

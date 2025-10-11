@@ -13,6 +13,9 @@ public partial class Warehouse
     [Column("Warehouse_id")]
     public int WarehouseId { get; set; }
 
+    [Column("Warehouse_name")]
+    public string WarehouseName { get; set; } = null!;
+
     [Column("Seller_id")]
     public int SellerId { get; set; }
 

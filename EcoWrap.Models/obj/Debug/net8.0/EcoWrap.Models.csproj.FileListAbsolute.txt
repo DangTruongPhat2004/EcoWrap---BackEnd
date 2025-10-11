@@ -22,3 +22,16 @@ C:\Users\DAT\Desktop\EcoWrap---BackEnd-Backend\EcoWrap---BackEnd-Backend\EcoWrap
 C:\Users\DAT\Desktop\EcoWrap---BackEnd-Backend\EcoWrap---BackEnd-Backend\EcoWrap.Models\obj\Debug\net8.0\refint\EcoWrap.Models.dll
 C:\Users\DAT\Desktop\EcoWrap---BackEnd-Backend\EcoWrap---BackEnd-Backend\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.pdb
 C:\Users\DAT\Desktop\EcoWrap---BackEnd-Backend\EcoWrap---BackEnd-Backend\EcoWrap.Models\obj\Debug\net8.0\ref\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\bin\Debug\net8.0\EcoWrap.Models.deps.json
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\bin\Debug\net8.0\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\bin\Debug\net8.0\EcoWrap.Models.pdb
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.AssemblyInfoInputs.cache
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.AssemblyInfo.cs
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.csproj.CoreCompileInputs.cache
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.sourcelink.json
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\refint\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.pdb
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\ref\EcoWrap.Models.dll
+C:\My_Project\EXE\EcoWrap---BackEnd\EcoWrap.Models\obj\Debug\net8.0\EcoWrap.Models.csproj.AssemblyReference.cache
