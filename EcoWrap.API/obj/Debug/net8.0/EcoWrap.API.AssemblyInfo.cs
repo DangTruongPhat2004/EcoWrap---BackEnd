@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EcoWrap.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c6d4c8c8b30e8f458727ffbb46cc11f427bae04c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2fb5506f7d89885e2c3fc8cc0071fe47f008e3b9")]
 [assembly: System.Reflection.AssemblyProductAttribute("EcoWrap.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EcoWrap.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

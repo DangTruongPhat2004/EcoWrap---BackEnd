@@ -14,6 +14,9 @@ public partial class User
     [Column("User_id")]
     public int UserId { get; set; }
 
+    [Column("Role_id")]
+    public int RoleId { get; set; }
+
     [StringLength(50)]
     public string Username { get; set; } = null!;
 
@@ -56,6 +59,9 @@ public partial class User
 
     [InverseProperty("User")]
     public virtual ICollection<Admin> Admins { get; set; } = new List<Admin>();
+
+    [ForeignKey("RoleId")]
+    public virtual Role Role { get; set; } = null!;
 
     [InverseProperty("User")]
     public virtual ICollection<EmailVerification> EmailVerifications { get; set; } = new List<EmailVerification>();

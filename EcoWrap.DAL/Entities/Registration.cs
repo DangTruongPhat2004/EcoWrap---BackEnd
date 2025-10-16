@@ -11,7 +11,7 @@ public partial class Registration
 {
     [Key]
     [Column("Registration_id")]
-    public int RegistrationId { get; set; } 
+    public int RegistrationId { get; set; }
 
     [Column("User_id")]
     public int UserId { get; set; }

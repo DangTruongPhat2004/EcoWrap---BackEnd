@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace EcoWrap.DAL.Entities;
 
@@ -14,29 +14,30 @@ public partial class Order
     [Unicode(false)]
     public string OrderId { get; set; } = null!;
 
+    [Column("Cart_id")]
+    public int CartId { get; set; }
+
     [Column("Customer_id")]
     public int CustomerId { get; set; }
 
-    [Column("Order_date", TypeName = "datetime")]
-    public DateTime? OrderDate { get; set; }
+    [Column("Order_total_price")]
+    public decimal? OrderTotalPrice { get; set; }
 
-    [Column("Total_amount")]
-    public int? TotalAmount { get; set; }
-
+    [Column("Created_date", TypeName = "datetime")]
+    public DateTime? CreatedDate { get; set; }
+    
     [Column("Order_status")]
-    [StringLength(20)]
     public string OrderStatus { get; set; } = null!;
+
+    [ForeignKey("CartId")]
+    [InverseProperty("Orders")]
+    public virtual Cart Cart { get; set; } = null!;
 
     [ForeignKey("CustomerId")]
     [InverseProperty("Orders")]
     public virtual Customer Customer { get; set; } = null!;
 
-    [InverseProperty("Order")]
-    public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-
-    [InverseProperty("Order")]
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
-    [InverseProperty("Order")]
     public virtual ICollection<Shipping> Shippings { get; set; } = new List<Shipping>();
 }

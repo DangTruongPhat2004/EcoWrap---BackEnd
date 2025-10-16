@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using EcoWrap.BLL.IServices;
 using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcoWrap.BLL.Services
 {
@@ -11,11 +12,16 @@ namespace EcoWrap.BLL.Services
     {
         private readonly IAdminRepository _adminRepo;
         private readonly IUserRepository _userRepo;
+        private readonly EcoWrapDbContext _dbContext;
 
-        public AdminService(IAdminRepository adminRepo, IUserRepository userRepo)
+        public AdminService(
+            IAdminRepository adminRepo,
+            IUserRepository userRepo,
+            EcoWrapDbContext dbContext)
         {
             _adminRepo = adminRepo ?? throw new ArgumentNullException(nameof(adminRepo));
             _userRepo = userRepo ?? throw new ArgumentNullException(nameof(userRepo));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public async Task<IEnumerable<Admin>> GetAllAdminsAsync()
@@ -44,7 +50,7 @@ namespace EcoWrap.BLL.Services
             if (user == null)
                 throw new InvalidOperationException("Không tìm thấy người dùng có UserId này.");
 
-            //Kiểm tra xem user đã là admin chưa
+            // Kiểm tra xem user đã là admin chưa
             var allAdmins = await _adminRepo.GetAllAsync();
             foreach (var a in allAdmins)
             {
@@ -52,11 +58,28 @@ namespace EcoWrap.BLL.Services
                     throw new InvalidOperationException("Người dùng này đã là admin, không thể thêm lại.");
             }
 
-            var admin = new Admin { UserId = userId };
-            await _adminRepo.AddAsync(admin);
-            await _adminRepo.SaveChangesAsync();
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // Cập nhật RoleId cho User = 1 (Admin)
+                user.RoleId = 1;
+                await _userRepo.UpdateAsync(user);
+                await _userRepo.SaveChangesAsync();
 
-            return $"Đã thêm userId {userId} thành admin thành công.";
+                // Tạo bản ghi Admin tương ứng
+                var admin = new Admin { UserId = userId };
+                await _adminRepo.AddAsync(admin);
+                await _adminRepo.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return $"Đã thêm userId {userId} thành admin (RoleId = 1) thành công.";
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<string> UpdateAdminAsync(int adminId, int userId)

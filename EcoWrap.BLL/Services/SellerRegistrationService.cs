@@ -19,19 +19,22 @@ namespace EcoWrap.BLL.Services
         private readonly IUserRepository _userRepo;
         private readonly CloudinaryService _cloudinary;
         private readonly IEmailService _emailService;
+        private readonly EcoWrapDbContext _dbContext;
 
         public SellerRegistrationService(
             IRegistrationRepository registrationRepo,
             ISellerRepository sellerRepo,
             IUserRepository userRepo,
             CloudinaryService cloudinary,
-            IEmailService emailService)
+            IEmailService emailService,
+            EcoWrapDbContext dbContext)  // inject DbContext
         {
             _registrationRepo = registrationRepo ?? throw new ArgumentNullException(nameof(registrationRepo));
             _sellerRepo = sellerRepo ?? throw new ArgumentNullException(nameof(sellerRepo));
             _userRepo = userRepo ?? throw new ArgumentNullException(nameof(userRepo));
             _cloudinary = cloudinary ?? throw new ArgumentNullException(nameof(cloudinary));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         // ------------------------ [SUBMIT REGISTRATION] ------------------------
@@ -147,7 +150,7 @@ namespace EcoWrap.BLL.Services
             return await _registrationRepo.GetByStatusAsync(status);
         }
 
-        // ------------------------ [APPROVE / REJECT] ------------------------
+        // ------------------------ [APPROVE] ------------------------
         public async Task<bool> ApproveRegistrationAsync(int registrationId)
         {
             var registration = await _registrationRepo.GetByIdAsync(registrationId)
@@ -156,7 +159,6 @@ namespace EcoWrap.BLL.Services
             if (registration.ApprovalStatus != RegistrationStatus.Pending.ToString())
                 throw new InvalidOperationException("Chỉ có thể duyệt các đơn đang chờ xử lý.");
 
-            // Kiểm tra xem user đã là seller chưa
             var existingSeller = await _sellerRepo.GetByUserIdAsync(registration.UserId);
             if (existingSeller != null)
                 throw new InvalidOperationException("Người dùng này đã là người bán.");
@@ -164,32 +166,49 @@ namespace EcoWrap.BLL.Services
             var user = await _userRepo.GetByIdAsync(registration.UserId)
                 ?? throw new InvalidOperationException("Không tìm thấy người dùng.");
 
-            registration.ApprovalStatus = RegistrationStatus.Approved.ToString();
-            await _registrationRepo.UpdateAsync(registration);
-            await _registrationRepo.SaveChangesAsync();
-
-            // Tự động thêm Seller record
-            var seller = new Seller
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
             {
-                UserId = registration.UserId,
-                CompanyName = registration.CompanyName,
-                Address = registration.CompanyAddress
-            };
+                // 1️ Cập nhật trạng thái đơn
+                registration.ApprovalStatus = RegistrationStatus.Approved.ToString();
+                await _registrationRepo.UpdateAsync(registration);
 
-            await _sellerRepo.AddAsync(seller);
-            await _sellerRepo.SaveChangesAsync();
+                // 2️ Cập nhật RoleId của user = 3 (Seller)
+                user.RoleId = 3;
+                await _userRepo.UpdateAsync(user);
 
-            // Gửi email thông báo duyệt
-            var subject = "EcoWrap - Đơn đăng ký người bán đã được duyệt";
-            var body = $@"
+                await _registrationRepo.SaveChangesAsync();
+                await _userRepo.SaveChangesAsync();
+
+                // 3️ Tạo record Seller
+                var seller = new Seller
+                {
+                    UserId = registration.UserId,
+                    CompanyName = registration.CompanyName,
+                    Address = registration.CompanyAddress
+                };
+                await _sellerRepo.AddAsync(seller);
+                await _sellerRepo.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                // 4️ Gửi email thông báo
+                var subject = "EcoWrap - Đơn đăng ký người bán đã được duyệt";
+                var body = $@"
                 <p>Xin chào <b>{user.FullName}</b>,</p>
                 <p>Chúc mừng! Đơn đăng ký người bán của bạn trên <b>EcoWrap</b> đã được <b>duyệt</b>.</p>
                 <p>Bây giờ bạn có thể đăng sản phẩm và bắt đầu kinh doanh ngay hôm nay!</p>
                 <p>Trân trọng,<br>Đội ngũ EcoWrap</p>";
 
-            await _emailService.SendEmailAsync(user.Email, subject, body);
+                await _emailService.SendEmailAsync(user.Email, subject, body);
 
-            return true;
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> UserRejectTheirRegistrationAsync(int registrationId, int userId)

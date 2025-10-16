@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EcoWrap.DAL.Entities;
 
+[Table("Admins")]
 public partial class Admin
 {
     [Key]

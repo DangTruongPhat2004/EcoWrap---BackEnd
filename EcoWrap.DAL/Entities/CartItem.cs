@@ -1,0 +1,36 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace EcoWrap.DAL.Entities
+{
+    [Table("CartItem")]
+    public partial class CartItem
+    {
+        [Key]
+        [Column("CartItem_id")]
+        public int CartItemId { get; set; }
+
+        [Column("Cart_id")]
+        public int CartId { get; set; }
+
+        [Column("Product_id")]
+        [StringLength(15)]
+        [Unicode(false)]
+        public string ProductId { get; set; } = null!;
+
+        [Column("Quantity")]
+        public int Quantity { get; set; }
+
+        [Column("Cart_item_price", TypeName = "decimal(18,2)")]
+        public decimal CartItemPrice { get; set; }
+
+        [ForeignKey("CartId")]
+        [InverseProperty("CartItems")]
+        public virtual Cart Cart { get; set; } = null!;
+
+        [ForeignKey("ProductId")]
+        [InverseProperty("CartItems")]
+        public virtual Product Product { get; set; } = null!;
+    }
+}

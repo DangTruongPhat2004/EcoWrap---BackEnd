@@ -80,15 +80,11 @@ namespace EcoWrap.DAL.Entities
         public virtual ICollection<CarbonFootprint> CarbonFootprints { get; set; } = new List<CarbonFootprint>();
 
         [InverseProperty("Product")]
-        public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
-
-        [InverseProperty("Product")]
         public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
 
         [InverseProperty("Product")]
-        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-
-        [InverseProperty("Product")]
         public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+        public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
     }
 }

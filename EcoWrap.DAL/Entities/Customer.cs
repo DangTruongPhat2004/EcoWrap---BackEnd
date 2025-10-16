@@ -16,9 +16,6 @@ public partial class Customer
     [Column("User_id")]
     public int UserId { get; set; }
 
-    [StringLength(255)]
-    public string? Address { get; set; }
-
     [InverseProperty("Customer")]
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 

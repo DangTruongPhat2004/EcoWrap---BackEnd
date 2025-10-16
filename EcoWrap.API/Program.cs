@@ -57,6 +57,8 @@ namespace EcoWrap.API
             // ===== Repositories =====
             builder.Services.AddScoped<IAdminRepository, AdminRepository>();
             builder.Services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
+            builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
             builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
@@ -71,6 +73,8 @@ namespace EcoWrap.API
             // ===== Services =====
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<ICartItemService, CartItemService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
