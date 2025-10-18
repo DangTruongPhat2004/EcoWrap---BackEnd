@@ -40,6 +40,17 @@ public partial class EcoWrapDbContext : DbContext
 
     public virtual DbSet<KbChunk> KbChunks { get; set; }
 
+    // Template
+
+    public DbSet<Template> Templates => Set<Template>();
+    public DbSet<TemplateVersion> TemplateVersions => Set<TemplateVersion>();
+    public DbSet<UserAsset> UserAssets { get; set; } = default!;
+
+
+    //design
+    public DbSet<Custom> Customs => Set<Custom>();
+    public DbSet<CustomAsset> CustomAssets => Set<CustomAsset>();
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, move it to configuration.
         => optionsBuilder.UseSqlServer(
@@ -49,6 +60,31 @@ public partial class EcoWrapDbContext : DbContext
     {
         // luôn đặt ở đầu, KHÔNG đặt trong từng entity
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<Template>(e =>
+        {
+            e.ToTable("Templates");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Category).HasMaxLength(100);
+            e.Property(x => x.ThumbnailUrl).HasMaxLength(500);
+            e.Property(x => x.DimensionsUnit).HasMaxLength(10).IsRequired();
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("getutcdate()");
+            e.HasMany(x => x.Versions).WithOne(v => v.Template)
+                .HasForeignKey(v => v.TemplateId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TemplateVersion>(e =>
+        {
+            e.ToTable("TemplateVersions");
+            e.HasKey(x => x.Id); // PK đơn
+            e.HasIndex(x => new { x.TemplateId, x.VersionNo }).IsUnique(); // đảm bảo duy nhất
+            e.Property(x => x.DielineSvgUrl).HasMaxLength(1000).IsRequired();
+            e.Property(x => x.DielineHash).HasMaxLength(128).IsRequired();
+            e.Property(x => x.DimensionsUnit).HasMaxLength(10).IsRequired();
+            e.Property(x => x.Layers).HasMaxLength(400);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("getutcdate()");
+        });
+
 
         // ===== Converter & Comparer cho float[] (KbChunk.Embedding) =====
         var floatArrayConverter = new ValueConverter<float[]?, byte[]?>(
@@ -280,6 +316,36 @@ public partial class EcoWrapDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(x => x.UserId);
         });
+
+        modelBuilder.Entity<Custom>(e =>
+        {
+            e.ToTable("Designs", tb =>
+            {
+                tb.HasTrigger("trg_Designs_SetUpdatedAt");   // 👈 tên trigger đúng như bạn đã tạo
+                                                             // nếu có nhiều trigger: tb.HasTrigger("TênTriggerKhác");
+            });
+
+            e.HasIndex(d => new { d.OwnerId, d.UpdatedAt });
+            e.Property(d => d.RowVersion).IsRowVersion();
+            e.Property(d => d.DesignData).HasColumnType("nvarchar(max)");
+            e.Property(d => d.TagsJson).HasColumnType("nvarchar(max)");
+
+            e.HasMany(d => d.Assets)
+             .WithOne(a => a.Custom)
+             .HasForeignKey(a => a.CustomId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ===== CustomAsset (map bảng CustomAssets) =====
+        modelBuilder.Entity<CustomAsset>(e =>
+        {
+            e.ToTable("CustomAssets");           // ✅ bảng riêng
+            e.HasIndex(a => a.CustomId);
+            e.Property(a => a.Url).HasMaxLength(2048);
+        });
+
+        modelBuilder.ApplyConfiguration(new DesignAssetConfig());
+        DesignAssetSeed.Seed(modelBuilder);
 
         OnModelCreatingPartial(modelBuilder);
     }
