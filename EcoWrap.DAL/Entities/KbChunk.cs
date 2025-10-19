@@ -1,33 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace EcoWrap.DAL.Entities;
-
-[Index("Sha256", Name = "IX_KbChunks_Sha256")]
-public partial class KbChunk
+namespace EcoWrap.DAL.Entities
 {
-    [Key]
-    [StringLength(64)]
-    public string Id { get; set; } = null!;
+    [Table("KbChunks")]
+    public class KbChunk
+    {
+        [Key] public string Id { get; set; } = Guid.NewGuid().ToString("N");
+        [MaxLength(300)] public string? Title { get; set; }
+        [MaxLength(500)] public string? Source { get; set; }   // link, file path, standard name
+        [MaxLength(200)] public string? Tags { get; set; }     // "material;kraft;FSC"
+        public string Text { get; set; } = "";
+        public float[]? Embedding { get; set; }                // 768-d (text-embedding-004)
 
-    [StringLength(300)]
-    public string? Title { get; set; }
-
-    [StringLength(500)]
-    public string? Source { get; set; }
-
-    [StringLength(200)]
-    public string? Tags { get; set; }
-
-    public string Text { get; set; } = null!;
-
-    public byte[]? Embedding { get; set; }
-
-    [StringLength(64)]
-    public string? Sha256 { get; set; }
-
-    public DateTime CreatedAt { get; set; }
+        // Điểm tiện: lưu thêm checksum để tránh index trùng
+        [MaxLength(64)] public string? Sha256 { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
 }

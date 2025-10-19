@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
-    <PackageReference Include="FirebaseAdmin" Version="3.4.0" />
-    <PackageReference Include="Google.Apis.Auth" Version="1.71.0" />
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.71.0.3905" />
-    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
@@ -27,11 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Repositories\NewFolder\" />
-  </ItemGroup>
-
-</Project>
-  <ItemGroup>
-    <ProjectReference Include="..\EcoWrap.Models\EcoWrap.Models.csproj" />
   </ItemGroup>
 
 </Project>

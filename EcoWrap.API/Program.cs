@@ -192,6 +192,10 @@ namespace EcoWrap.API
                     }
                 });
             });
+
+            // ===== Cloudinary Api =====
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+            builder.Services.AddSingleton<CloudinaryService>();
             // ======= Chat ///////
 
             builder.Services.AddSignalR();

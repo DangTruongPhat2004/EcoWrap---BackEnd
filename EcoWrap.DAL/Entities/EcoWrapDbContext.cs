@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace EcoWrap.DAL.Entities;
 
 public partial class EcoWrapDbContext : DbContext
@@ -49,9 +50,7 @@ public partial class EcoWrapDbContext : DbContext
 
     public virtual DbSet<Seller> Sellers { get; set; }
 
-    public virtual DbSet<Template> Templates { get; set; }
 
-    public virtual DbSet<TemplateVersion> TemplateVersions { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -61,8 +60,7 @@ public partial class EcoWrapDbContext : DbContext
     public virtual DbSet<Message> Messages { get; set; }
     public virtual DbSet<MessageReceipt> MessageReceipts { get; set; }
 
-    public virtual DbSet<KbChunk> KbChunks { get; set; }
-    public virtual DbSet<UserAsset> UserAssets { get; set; }
+    
 
     public virtual DbSet<Warehouse> Warehouses { get; set; }
 
@@ -79,7 +77,7 @@ public partial class EcoWrapDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost;uid=sa;pwd=123456;Database=EcoWrap;Trusted_Connection=True;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;uid=sa;pwd=123456;Database=EcoWrap;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -315,7 +313,7 @@ public partial class EcoWrapDbContext : DbContext
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
-            entity.HasOne(d => d.Template).WithMany(p => p.TemplateVersions).HasConstraintName("FK_TemplateVersions_Templates");
+            entity.HasOne(d => d.Template).WithMany(p => p.Versions).HasConstraintName("FK_TemplateVersions_Templates");
         });
 
         modelBuilder.Entity<User>(entity =>
