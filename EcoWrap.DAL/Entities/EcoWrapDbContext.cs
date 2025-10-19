@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace EcoWrap.DAL.Entities;
@@ -226,12 +228,23 @@ public partial class EcoWrapDbContext : DbContext
                 .HasConstraintName("FK_Inventory_Warehouse");
         });
 
-        modelBuilder.Entity<KbChunk>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__KbChunks__3214EC074A071D49");
+        var floatArrayConverter = new ValueConverter<float[]?, byte[]?>(
+             v => v == null ? null : FloatArrayToBytes(v),
+             v => v == null ? null : BytesToFloatArray(v)
+         );
 
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
-        });
+        var floatArrayComparer = new ValueComparer<float[]?>(
+            (a, b) =>
+                (a == null && b == null) ||
+                (a != null && b != null && a.SequenceEqual(b)),
+            v => v == null ? 0 : v.Aggregate(0, (h, x) => HashCode.Combine(h, x.GetHashCode())),
+            v => v == null ? null : v.ToArray()
+        );
+
+        modelBuilder.Entity<KbChunk>()
+            .Property(p => p.Embedding)
+            .HasConversion(floatArrayConverter)
+            .Metadata.SetValueComparer(floatArrayComparer);
 
         modelBuilder.Entity<Order>(entity =>
         {
