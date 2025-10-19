@@ -23,6 +23,27 @@ public partial class Seller
     [StringLength(255)]
     public string? Address { get; set; }
 
+    [StringLength(50)]
+    public string? BankAccountNumber { get; set; }
+
+    [StringLength(100)]
+    public string? BankName { get; set; }
+
+    [StringLength(100)]
+    public string? AccountHolderName { get; set; }
+
+    [StringLength(100)]
+    public string? BankBranch { get; set; }
+
+    [Column("QRCodeImage")]
+    public string? QrcodeImage { get; set; }
+
+    [InverseProperty("Seller")]
+    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+
+    [InverseProperty("Seller")]
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+
     [InverseProperty("Seller")]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 

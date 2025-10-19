@@ -31,7 +31,7 @@ namespace EcoWrap.API.Controllers
 
         // -------------------- [POST] /api/cartitem --------------------
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] CreateCartItemRequest request)
+        public async Task<IActionResult> CreateAsync([FromForm] CreateCartItemRequest request)
         {
             try
             {

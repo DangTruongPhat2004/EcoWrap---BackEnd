@@ -49,9 +49,6 @@ public partial class User
     public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 
     [InverseProperty("User")]
-    public virtual ICollection<PaymentMethod> PaymentMethods { get; set; } = new List<PaymentMethod>();
-
-    [InverseProperty("User")]
     public virtual ICollection<Registration> Registrations { get; set; } = new List<Registration>();
 
     [InverseProperty("User")]

@@ -14,17 +14,20 @@ namespace EcoWrap.BLL.Services
         private readonly IProductRepository _productRepo;
         private readonly IInventoryRepository _inventoryRepo;
         private readonly ICartRepository _cartRepo;
+        private readonly CloudinaryService _cloudinaryService;
 
         public CartItemService(
             ICartItemRepository cartItemRepo,
             IProductRepository productRepo,
             IInventoryRepository inventoryRepo,
-            ICartRepository cartRepo)
+            ICartRepository cartRepo,
+            CloudinaryService cloudinaryService)
         {
             _cartItemRepo = cartItemRepo;
             _productRepo = productRepo;
             _inventoryRepo = inventoryRepo;
             _cartRepo = cartRepo;
+            _cloudinaryService = cloudinaryService;
         }
 
         // -------------------- [PRIVATE METHOD - CHECK CART OWNERSHIP] --------------------
@@ -60,14 +63,16 @@ namespace EcoWrap.BLL.Services
                     CartTotalPrice = 0
                 };
                 await _cartRepo.AddAsync(cart);
-                await _cartRepo.SaveChangesAsync(); // lưu để có CartId
+                await _cartRepo.SaveChangesAsync();
             }
 
-            // Kiểm tra sản phẩm tồn tại
+            //Lấy sản phẩm và SellerId
             var product = await _productRepo.GetByIdAsync(request.ProductId)
                 ?? throw new InvalidOperationException("Không tìm thấy sản phẩm trong hệ thống.");
 
-            // Kiểm tra tồn kho
+            int sellerId = product.SellerId; //tự động gán seller id
+
+            //Kiểm tra tồn kho
             var inventories = await _inventoryRepo.GetAllAsync();
             int totalStock = inventories
                 .Where(i => i.ProductId == request.ProductId)
@@ -79,23 +84,46 @@ namespace EcoWrap.BLL.Services
             if (request.Quantity > totalStock)
                 throw new InvalidOperationException($"Chỉ còn {totalStock} sản phẩm trong kho, không thể thêm {request.Quantity}.");
 
-            // Kiểm tra trùng sản phẩm trong giỏ
+            //Kiểm tra trùng sản phẩm trong giỏ
             var existingItem = await _cartItemRepo.GetByCartAndProductAsync(cart.CartId, request.ProductId);
             if (existingItem != null)
                 throw new InvalidOperationException("Sản phẩm này đã có trong giỏ hàng. Hãy cập nhật số lượng thay vì thêm mới.");
 
+            //Upload file thiết kế (nếu có)
+            string? designFileUrl = null;
+            if (request.Design_file != null)
+            {
+                try
+                {
+                    var extension = Path.GetExtension(request.Design_file.FileName).ToLower();
+                    string[] imageExt = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+                    if (imageExt.Contains(extension))
+                        designFileUrl = await _cloudinaryService.UploadImageAsync(request.Design_file, "ecowrap/cart-items/designs");
+                    else
+                        designFileUrl = await _cloudinaryService.UploadFileAsync(request.Design_file, "ecowrap/cart-items/files");
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Lỗi khi upload file thiết kế: {ex.Message}");
+                }
+            }
+
+            //Tạo CartItem
             var cartItem = new CartItem
             {
                 CartId = cart.CartId,
                 ProductId = request.ProductId,
+                SellerId = sellerId,
                 Quantity = request.Quantity,
-                CartItemPrice = request.Quantity * product.ProductPrice
+                CartItemPrice = request.Quantity * product.ProductPrice,
+                DesignFile = designFileUrl
             };
 
             await _cartItemRepo.AddAsync(cartItem);
             await _cartItemRepo.SaveChangesAsync();
 
-            // Cập nhật tổng giá Cart
+            //Cập nhật tổng giá
             await UpdateCartTotalPriceAsync(cart.CartId);
 
             return new
@@ -106,10 +134,11 @@ namespace EcoWrap.BLL.Services
                     cartItem.CartItemId,
                     cartItem.CartId,
                     cartItem.ProductId,
-                    ProductName = product.ProductName,
                     product.ProductPrice,
                     cartItem.Quantity,
-                    cartItem.CartItemPrice
+                    cartItem.CartItemPrice,
+                    cartItem.SellerId,
+                    cartItem.DesignFile
                 }
             };
         }

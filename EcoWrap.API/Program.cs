@@ -63,6 +63,7 @@ namespace EcoWrap.API
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
             builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
             builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IRegisterAccountRepository, RegisterAccountRepository>();
             builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
@@ -81,6 +82,7 @@ namespace EcoWrap.API
             builder.Services.AddScoped<IEmbeddingService, EmbeddingService>(); // Embeddings
             builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
             builder.Services.AddScoped<IInventoryService, InventoryService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IRegisterAccountService, RegisterAccountService>();
             builder.Services.AddScoped<ISellerRegistrationService, SellerRegistrationService>();
@@ -170,302 +172,302 @@ namespace EcoWrap.API
 
             app.MapControllers();
 
-            // ===== GET /ai/models =====
-            app.MapGet("/ai/models", async (IHttpClientFactory httpClientFactory, IConfiguration cfg) =>
-            {
-                var key = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
-                if (string.IsNullOrWhiteSpace(key))
-                    return Results.BadRequest(new { error = true, message = "Missing GOOGLE_API_KEY" });
+//            // ===== GET /ai/models =====
+//            app.MapGet("/ai/models", async (IHttpClientFactory httpClientFactory, IConfiguration cfg) =>
+//            {
+//                var key = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
+//                if (string.IsNullOrWhiteSpace(key))
+//                    return Results.BadRequest(new { error = true, message = "Missing GOOGLE_API_KEY" });
 
-                var client = httpClientFactory.CreateClient("googleai");
-                var res = await client.GetAsync($"v1/models?key={key}");
-                var text = await res.Content.ReadAsStringAsync();
-                return Results.Text(text, "application/json");
-            })
-            .WithOpenApi(op =>
-            {
-                op.Summary = "List available Google AI Studio models";
-                return op;
-            });
+//                var client = httpClientFactory.CreateClient("googleai");
+//                var res = await client.GetAsync($"v1/models?key={key}");
+//                var text = await res.Content.ReadAsStringAsync();
+//                return Results.Text(text, "application/json");
+//            })
+//            .WithOpenApi(op =>
+//            {
+//                op.Summary = "List available Google AI Studio models";
+//                return op;
+//            });
 
-            // ===== POST /ai/kb/index — nạp tri thức vào KB =====
-            app.MapPost("/ai/kb/index",
-            async (KbUpsertRequest req, EcoWrapDbContext db, IEmbeddingService emb) =>
-            {
-                if (req?.items == null || req.items.Count == 0)
-                    return Results.BadRequest(new { error = true, message = "No items" });
+//            // ===== POST /ai/kb/index — nạp tri thức vào KB =====
+//            app.MapPost("/ai/kb/index",
+//            async (KbUpsertRequest req, EcoWrapDbContext db, IEmbeddingService emb) =>
+//            {
+//                if (req?.items == null || req.items.Count == 0)
+//                    return Results.BadRequest(new { error = true, message = "No items" });
 
-                int inserted = 0;
-                foreach (var it in req.items)
-                {
-                    var text = (it.text ?? "").Trim();
-                    if (text.Length == 0) continue;
+//                int inserted = 0;
+//                foreach (var it in req.items)
+//                {
+//                    var text = (it.text ?? "").Trim();
+//                    if (text.Length == 0) continue;
 
-                    var sha = Sha256(text);
-                    var dup = db.Set<KbChunk>().FirstOrDefault(x => x.Sha256 == sha);
-                    if (dup != null) continue;
+//                    var sha = Sha256(text);
+//                    var dup = db.Set<KbChunk>().FirstOrDefault(x => x.Sha256 == sha);
+//                    if (dup != null) continue;
 
-                    var vec = await emb.EmbedAsync(text);
-                    db.Add(new KbChunk
-                    {
-                        Id = string.IsNullOrWhiteSpace(it.id) ? Guid.NewGuid().ToString("N") : it.id!,
-                        Title = it.title,
-                        Source = it.source,
-                        Tags = it.tags,
-                        Text = text,
-                        Embedding = vec,
-                        Sha256 = sha
-                    });
-                    inserted++;
-                }
-                await db.SaveChangesAsync();
-                return Results.Ok(new { inserted });
+//                    var vec = await emb.EmbedAsync(text);
+//                    db.Add(new KbChunk
+//                    {
+//                        Id = string.IsNullOrWhiteSpace(it.id) ? Guid.NewGuid().ToString("N") : it.id!,
+//                        Title = it.title,
+//                        Source = it.source,
+//                        Tags = it.tags,
+//                        Text = text,
+//                        Embedding = vec,
+//                        Sha256 = sha
+//                    });
+//                    inserted++;
+//                }
+//                await db.SaveChangesAsync();
+//                return Results.Ok(new { inserted });
 
-                static string Sha256(string s)
-                {
-                    using var sha = SHA256.Create();
-                    return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(s)))
-                           .Replace("-", "").ToLowerInvariant();
-                }
-            })
-            .WithOpenApi(op => { op.Summary = "Index knowledge items into KB (with embeddings)"; return op; });
+//                static string Sha256(string s)
+//                {
+//                    using var sha = SHA256.Create();
+//                    return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(s)))
+//                           .Replace("-", "").ToLowerInvariant();
+//                }
+//            })
+//            .WithOpenApi(op => { op.Summary = "Index knowledge items into KB (with embeddings)"; return op; });
 
-            // ===== POST /ai/chat-rag — chat có RAG =====
-            app.MapPost("/ai/chat-rag",
-            async (RagChatRequest req,
-                   EcoWrapDbContext db,
-                   IEmbeddingService emb,
-                   IHttpClientFactory http,
-                   IConfiguration cfg) =>
-            {
-                var key = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
-                if (string.IsNullOrWhiteSpace(key))
-                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing GOOGLE_API_KEY" });
+//            // ===== POST /ai/chat-rag — chat có RAG =====
+//            app.MapPost("/ai/chat-rag",
+//            async (RagChatRequest req,
+//                   EcoWrapDbContext db,
+//                   IEmbeddingService emb,
+//                   IHttpClientFactory http,
+//                   IConfiguration cfg) =>
+//            {
+//                var key = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
+//                if (string.IsNullOrWhiteSpace(key))
+//                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing GOOGLE_API_KEY" });
 
-                if (req?.messages == null || req.messages.Count == 0)
-                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing 'messages'" });
+//                if (req?.messages == null || req.messages.Count == 0)
+//                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing 'messages'" });
 
-                var lastUser = req.messages.LastOrDefault(m => (m.role ?? "user") != "assistant")?.content
-                               ?? req.messages.LastOrDefault()?.content ?? "";
+//                var lastUser = req.messages.LastOrDefault(m => (m.role ?? "user") != "assistant")?.content
+//                               ?? req.messages.LastOrDefault()?.content ?? "";
 
-                var qvec = await emb.EmbedAsync(lastUser, "RETRIEVAL_QUERY");
-                var all = db.Set<KbChunk>().AsNoTracking().ToList();
-                var minScore = 0.28;
-                var scored = all.Where(x => x.Embedding != null)
-    .Select(x => new { item = x, score = IEmbeddingService.CosineSimilarity(qvec, x.Embedding!) })
-    .Where(x => x.score >= minScore)
-    .OrderByDescending(x => x.score)
-    .Take(Math.Max(3, Math.Min(req.k, 8)))
-    .ToList();
+//                var qvec = await emb.EmbedAsync(lastUser, "RETRIEVAL_QUERY");
+//                var all = db.Set<KbChunk>().AsNoTracking().ToList();
+//                var minScore = 0.28;
+//                var scored = all.Where(x => x.Embedding != null)
+//    .Select(x => new { item = x, score = IEmbeddingService.CosineSimilarity(qvec, x.Embedding!) })
+//    .Where(x => x.score >= minScore)
+//    .OrderByDescending(x => x.score)
+//    .Take(Math.Max(3, Math.Min(req.k, 8)))
+//    .ToList();
 
-                var ctx = string.Join("\n---\n", scored.Select((x, i) =>
-    $"[C{i + 1} | SCORE:{x.score:F3} | TITLE:{x.item.Title} | SOURCE:{x.item.Source}]\n{x.item.Text}"));
+//                var ctx = string.Join("\n---\n", scored.Select((x, i) =>
+//    $"[C{i + 1} | SCORE:{x.score:F3} | TITLE:{x.item.Title} | SOURCE:{x.item.Source}]\n{x.item.Text}"));
 
-                var system = req.system ?? "Bạn là EcoWrap AI – trợ lý bao bì thân thiện môi trường. Chỉ dùng NGỮ CẢNH để trả lời.";
-                var userAugmented = $@"
-# Nhiệm vụ
-Bạn là EcoWrap AI – trợ lý bao bì bền vững. Trả lời ngắn gọn, **Markdown đẹp**, chỉ dùng NGỮ CẢNH.
+//                var system = req.system ?? "Bạn là EcoWrap AI – trợ lý bao bì thân thiện môi trường. Chỉ dùng NGỮ CẢNH để trả lời.";
+//                var userAugmented = $@"
+//# Nhiệm vụ
+//Bạn là EcoWrap AI – trợ lý bao bì bền vững. Trả lời ngắn gọn, **Markdown đẹp**, chỉ dùng NGỮ CẢNH.
 
-# Câu hỏi
-{lastUser}
+//# Câu hỏi
+//{lastUser}
 
-# NGỮ CẢNH (Top-K | C# | SCORE | TITLE — SOURCE)
-{ctx}
+//# NGỮ CẢNH (Top-K | C# | SCORE | TITLE — SOURCE)
+//{ctx}
 
-# YÊU CẦU ĐỊNH DẠNG
-- Mở đầu một dòng: **TL;DR:** <tóm tắt 1–2 câu>.
-- Sau đó 3–6 bullet **hành động** (mỗi bullet bắt đầu bằng động từ).
-- Kết thúc bằng mục **Nguồn trích dẫn** liệt kê các C# bạn đã dùng, format: `[C#, TITLE — SOURCE]`.
-- Không bịa ngoài ngữ cảnh; nếu thiếu dữ liệu, nêu rõ ""thiếu gì"".
+//# YÊU CẦU ĐỊNH DẠNG
+//- Mở đầu một dòng: **TL;DR:** <tóm tắt 1–2 câu>.
+//- Sau đó 3–6 bullet **hành động** (mỗi bullet bắt đầu bằng động từ).
+//- Kết thúc bằng mục **Nguồn trích dẫn** liệt kê các C# bạn đã dùng, format: `[C#, TITLE — SOURCE]`.
+//- Không bịa ngoài ngữ cảnh; nếu thiếu dữ liệu, nêu rõ ""thiếu gì"".
 
-# Lưu ý phong cách
-- Tránh thuật ngữ khó; nêu rõ trade-off (chống dầu vs tái chế…).
-- Không lạm dụng số liệu trừ khi NGỮ CẢNH có.
-";
+//# Lưu ý phong cách
+//- Tránh thuật ngữ khó; nêu rõ trade-off (chống dầu vs tái chế…).
+//- Không lạm dụng số liệu trừ khi NGỮ CẢNH có.
+//";
 
-                var client = http.CreateClient("googleai");
-                var model = "models/gemini-2.5-flash";
-                var payload = new
-                {
-                    contents = new object[] {
-                        new { role = "user", parts = new[]{ new { text = system } } },
-                        new { role = "user", parts = new[]{ new { text = userAugmented } } }
-                    }
-                };
-                var httpReq = new HttpRequestMessage(HttpMethod.Post, $"v1/{model}:generateContent?key={key}")
-                {
-                    Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
-                };
-                var res = await client.SendAsync(httpReq);
-                var text = await res.Content.ReadAsStringAsync();
+//                var client = http.CreateClient("googleai");
+//                var model = "models/gemini-2.5-flash";
+//                var payload = new
+//                {
+//                    contents = new object[] {
+//                        new { role = "user", parts = new[]{ new { text = system } } },
+//                        new { role = "user", parts = new[]{ new { text = userAugmented } } }
+//                    }
+//                };
+//                var httpReq = new HttpRequestMessage(HttpMethod.Post, $"v1/{model}:generateContent?key={key}")
+//                {
+//                    Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
+//                };
+//                var res = await client.SendAsync(httpReq);
+//                var text = await res.Content.ReadAsStringAsync();
 
-                if (!res.IsSuccessStatusCode)
-                    return Results.Json(new AiChatResponse { error = true, message = "Gemini error", status = (int)res.StatusCode, detail = text }, statusCode: 500);
+//                if (!res.IsSuccessStatusCode)
+//                    return Results.Json(new AiChatResponse { error = true, message = "Gemini error", status = (int)res.StatusCode, detail = text }, statusCode: 500);
 
-                using var json = JsonDocument.Parse(text);
-                string reply = "";
-                if (json.RootElement.TryGetProperty("candidates", out var cands) &&
-                    cands.ValueKind == JsonValueKind.Array && cands.GetArrayLength() > 0)
-                {
-                    var parts = cands[0].GetProperty("content").GetProperty("parts").EnumerateArray();
-                    foreach (var p in parts)
-                        if (p.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String) reply += t.GetString();
-                }
-                if (string.IsNullOrWhiteSpace(reply)) reply = "(Model không trả văn bản.)";
-                return Results.Ok(new AiChatResponse { reply = reply });
-            })
-            .WithOpenApi(op => { op.Summary = "Chat with RAG over EcoWrap KB"; return op; });
+//                using var json = JsonDocument.Parse(text);
+//                string reply = "";
+//                if (json.RootElement.TryGetProperty("candidates", out var cands) &&
+//                    cands.ValueKind == JsonValueKind.Array && cands.GetArrayLength() > 0)
+//                {
+//                    var parts = cands[0].GetProperty("content").GetProperty("parts").EnumerateArray();
+//                    foreach (var p in parts)
+//                        if (p.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String) reply += t.GetString();
+//                }
+//                if (string.IsNullOrWhiteSpace(reply)) reply = "(Model không trả văn bản.)";
+//                return Results.Ok(new AiChatResponse { reply = reply });
+//            })
+//            .WithOpenApi(op => { op.Summary = "Chat with RAG over EcoWrap KB"; return op; });
 
-            // ===== POST /ai/chat — proxy Gemini thường =====
-            app.MapPost("/ai/chat",
-            async (AiChatRequest req, IHttpClientFactory httpClientFactory, IConfiguration cfg) =>
-            {
-                var googleApiKey = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
-                if (string.IsNullOrWhiteSpace(googleApiKey))
-                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing GOOGLE_API_KEY (GoogleAI:ApiKey)." });
+//            // ===== POST /ai/chat — proxy Gemini thường =====
+//            app.MapPost("/ai/chat",
+//            async (AiChatRequest req, IHttpClientFactory httpClientFactory, IConfiguration cfg) =>
+//            {
+//                var googleApiKey = cfg["GoogleAI:ApiKey"] ?? Environment.GetEnvironmentVariable("GOOGLE_API_KEY");
+//                if (string.IsNullOrWhiteSpace(googleApiKey))
+//                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing GOOGLE_API_KEY (GoogleAI:ApiKey)." });
 
-                if (req?.messages == null || req.messages.Count == 0)
-                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing 'messages' array" });
+//                if (req?.messages == null || req.messages.Count == 0)
+//                    return Results.BadRequest(new AiChatResponse { error = true, message = "Missing 'messages' array" });
 
-                // Map sang schema Gemini (assistant -> model; còn lại là user)
-                var contents = req.messages.Select(m => new
-                {
-                    role = (m.role == "assistant") ? "model" : "user",
-                    parts = new[] { new { text = m.content ?? "" } }
-                });
+//                // Map sang schema Gemini (assistant -> model; còn lại là user)
+//                var contents = req.messages.Select(m => new
+//                {
+//                    role = (m.role == "assistant") ? "model" : "user",
+//                    parts = new[] { new { text = m.content ?? "" } }
+//                });
 
-                var payload = new { contents };
+//                var payload = new { contents };
 
-                var client = httpClientFactory.CreateClient("googleai");
+//                var client = httpClientFactory.CreateClient("googleai");
 
-                var preferences = new[]
-                {
-                    "models/gemini-2.5-flash",
-                    "models/gemini-2.5-pro",
-                    "models/gemini-2.5-flash-lite",
-                    "models/gemini-2.0-flash",
-                    "models/gemini-2.0-flash-001",
-                    "models/gemini-2.0-flash-lite",
-                    "models/gemini-2.0-flash-lite-001"
-                };
+//                var preferences = new[]
+//                {
+//                    "models/gemini-2.5-flash",
+//                    "models/gemini-2.5-pro",
+//                    "models/gemini-2.5-flash-lite",
+//                    "models/gemini-2.0-flash",
+//                    "models/gemini-2.0-flash-001",
+//                    "models/gemini-2.0-flash-lite",
+//                    "models/gemini-2.0-flash-lite-001"
+//                };
 
-                string chosen = preferences[0];
-                try
-                {
-                    var listRes = await client.GetAsync($"v1/models?key={googleApiKey}");
-                    var listText = await listRes.Content.ReadAsStringAsync();
-                }
-                catch { /* ignore; dùng mặc định */ }
+//                string chosen = preferences[0];
+//                try
+//                {
+//                    var listRes = await client.GetAsync($"v1/models?key={googleApiKey}");
+//                    var listText = await listRes.Content.ReadAsStringAsync();
+//                }
+//                catch { /* ignore; dùng mặc định */ }
 
-                var httpReq = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    $"v1/{chosen}:generateContent?key={googleApiKey}")
-                {
-                    Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
-                };
+//                var httpReq = new HttpRequestMessage(
+//                    HttpMethod.Post,
+//                    $"v1/{chosen}:generateContent?key={googleApiKey}")
+//                {
+//                    Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
+//                };
 
-                try
-                {
-                    var res = await client.SendAsync(httpReq);
-                    var text = await res.Content.ReadAsStringAsync();
+//                try
+//                {
+//                    var res = await client.SendAsync(httpReq);
+//                    var text = await res.Content.ReadAsStringAsync();
 
-                    if (!res.IsSuccessStatusCode)
-                    {
-                        return Results.Json(new AiChatResponse
-                        {
-                            error = true,
-                            message = "Gemini error",
-                            status = (int)res.StatusCode,
-                            detail = text
-                        }, statusCode: 500);
-                    }
+//                    if (!res.IsSuccessStatusCode)
+//                    {
+//                        return Results.Json(new AiChatResponse
+//                        {
+//                            error = true,
+//                            message = "Gemini error",
+//                            status = (int)res.StatusCode,
+//                            detail = text
+//                        }, statusCode: 500);
+//                    }
 
-                    using var json = JsonDocument.Parse(text);
-                    string reply = "";
+//                    using var json = JsonDocument.Parse(text);
+//                    string reply = "";
 
-                    if (json.RootElement.TryGetProperty("candidates", out var cands) &&
-                        cands.ValueKind == JsonValueKind.Array &&
-                        cands.GetArrayLength() > 0)
-                    {
-                        var first = cands[0];
+//                    if (json.RootElement.TryGetProperty("candidates", out var cands) &&
+//                        cands.ValueKind == JsonValueKind.Array &&
+//                        cands.GetArrayLength() > 0)
+//                    {
+//                        var first = cands[0];
 
-                        if (first.TryGetProperty("finishReason", out var fr) &&
-                            fr.ValueKind == JsonValueKind.String &&
-                            fr.GetString()?.Equals("SAFETY", StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            var reason = "Trả lời bị chặn bởi bộ lọc an toàn của model.";
-                            if (first.TryGetProperty("safetyRatings", out var sr))
-                                reason += " (safetyRatings present)";
-                            return Results.Json(new AiChatResponse
-                            {
-                                error = true,
-                                message = "Safety blocked",
-                                detail = reason
-                            }, statusCode: 400);
-                        }
+//                        if (first.TryGetProperty("finishReason", out var fr) &&
+//                            fr.ValueKind == JsonValueKind.String &&
+//                            fr.GetString()?.Equals("SAFETY", StringComparison.OrdinalIgnoreCase) == true)
+//                        {
+//                            var reason = "Trả lời bị chặn bởi bộ lọc an toàn của model.";
+//                            if (first.TryGetProperty("safetyRatings", out var sr))
+//                                reason += " (safetyRatings present)";
+//                            return Results.Json(new AiChatResponse
+//                            {
+//                                error = true,
+//                                message = "Safety blocked",
+//                                detail = reason
+//                            }, statusCode: 400);
+//                        }
 
-                        if (first.TryGetProperty("content", out var content) &&
-                            content.TryGetProperty("parts", out var parts) &&
-                            parts.ValueKind == JsonValueKind.Array)
-                        {
-                            foreach (var p in parts.EnumerateArray())
-                            {
-                                if (p.TryGetProperty("text", out var tt) && tt.ValueKind == JsonValueKind.String)
-                                {
-                                    reply += tt.GetString();
-                                }
-                                else if (p.TryGetProperty("executableCode", out var codeObj) && codeObj.TryGetProperty("code", out var codeVal))
-                                {
-                                    reply += "```\n" + (codeVal.GetString() ?? "") + "\n```\n";
-                                }
-                                else if (p.TryGetProperty("functionCall", out var fc) && fc.TryGetProperty("name", out var fname))
-                                {
-                                    reply += $"[Function call: {fname.GetString()}]\n";
-                                }
-                            }
-                        }
-                    }
+//                        if (first.TryGetProperty("content", out var content) &&
+//                            content.TryGetProperty("parts", out var parts) &&
+//                            parts.ValueKind == JsonValueKind.Array)
+//                        {
+//                            foreach (var p in parts.EnumerateArray())
+//                            {
+//                                if (p.TryGetProperty("text", out var tt) && tt.ValueKind == JsonValueKind.String)
+//                                {
+//                                    reply += tt.GetString();
+//                                }
+//                                else if (p.TryGetProperty("executableCode", out var codeObj) && codeObj.TryGetProperty("code", out var codeVal))
+//                                {
+//                                    reply += "```\n" + (codeVal.GetString() ?? "") + "\n```\n";
+//                                }
+//                                else if (p.TryGetProperty("functionCall", out var fc) && fc.TryGetProperty("name", out var fname))
+//                                {
+//                                    reply += $"[Function call: {fname.GetString()}]\n";
+//                                }
+//                            }
+//                        }
+//                    }
 
-                    if (string.IsNullOrWhiteSpace(reply))
-                    {
-                        if (json.RootElement.TryGetProperty("promptFeedback", out var pf) &&
-                            pf.TryGetProperty("blockReason", out var br) &&
-                            br.ValueKind == JsonValueKind.String)
-                        {
-                            return Results.Json(new AiChatResponse
-                            {
-                                error = true,
-                                message = "Prompt bị chặn",
-                                detail = $"blockReason={br.GetString()}"
-                            }, statusCode: 400);
-                        }
+//                    if (string.IsNullOrWhiteSpace(reply))
+//                    {
+//                        if (json.RootElement.TryGetProperty("promptFeedback", out var pf) &&
+//                            pf.TryGetProperty("blockReason", out var br) &&
+//                            br.ValueKind == JsonValueKind.String)
+//                        {
+//                            return Results.Json(new AiChatResponse
+//                            {
+//                                error = true,
+//                                message = "Prompt bị chặn",
+//                                detail = $"blockReason={br.GetString()}"
+//                            }, statusCode: 400);
+//                        }
 
-                        reply = "(Model không trả văn bản. Có thể bị safety-filter hoặc format parts khác.)";
-                    }
+//                        reply = "(Model không trả văn bản. Có thể bị safety-filter hoặc format parts khác.)";
+//                    }
 
-                    return Results.Ok(new AiChatResponse { reply = reply });
+//                    return Results.Ok(new AiChatResponse { reply = reply });
 
-                }
-                catch (Exception ex)
-                {
-                    return Results.Json(new AiChatResponse
-                    {
-                        error = true,
-                        message = "Server error",
-                        detail = ex.Message
-                    }, statusCode: 500);
-                }
-            })
-            .Accepts<AiChatRequest>("application/json")
-            .Produces<AiChatResponse>(StatusCodes.Status200OK)
-            .Produces<AiChatResponse>(StatusCodes.Status400BadRequest)
-            .Produces<AiChatResponse>(StatusCodes.Status500InternalServerError)
-            .WithOpenApi(op =>
-            {
-                op.Summary = "Proxy Gemini chat (Google AI Studio)";
-                op.Description = "Body: { \"messages\": [{\"role\":\"user|assistant\",\"content\":\"...\"}] }";
-                return op;
-            });
+//                }
+//                catch (Exception ex)
+//                {
+//                    return Results.Json(new AiChatResponse
+//                    {
+//                        error = true,
+//                        message = "Server error",
+//                        detail = ex.Message
+//                    }, statusCode: 500);
+//                }
+//            })
+//            .Accepts<AiChatRequest>("application/json")
+//            .Produces<AiChatResponse>(StatusCodes.Status200OK)
+//            .Produces<AiChatResponse>(StatusCodes.Status400BadRequest)
+//            .Produces<AiChatResponse>(StatusCodes.Status500InternalServerError)
+//            .WithOpenApi(op =>
+//            {
+//                op.Summary = "Proxy Gemini chat (Google AI Studio)";
+//                op.Description = "Body: { \"messages\": [{\"role\":\"user|assistant\",\"content\":\"...\"}] }";
+//                return op;
+//            });
 
             app.Run();
         }

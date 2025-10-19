@@ -214,19 +214,33 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCartItemRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCartItemRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCartItemRequest"
+                "type": "object",
+                "properties": {
+                  "ProductId": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "Design_file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "ProductId": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Design_file": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -425,116 +439,6 @@
         }
       }
     },
-    "/ai/models": {
-      "get": {
-        "tags": [
-          "EcoWrap.API"
-        ],
-        "summary": "List available Google AI Studio models",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/ai/kb/index": {
-      "post": {
-        "tags": [
-          "EcoWrap.API"
-        ],
-        "summary": "Index knowledge items into KB (with embeddings)",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/KbUpsertRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/ai/chat-rag": {
-      "post": {
-        "tags": [
-          "EcoWrap.API"
-        ],
-        "summary": "Chat with RAG over EcoWrap KB",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RagChatRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/ai/chat": {
-      "post": {
-        "tags": [
-          "EcoWrap.API"
-        ],
-        "summary": "Proxy Gemini chat (Google AI Studio)",
-        "description": "Body: { \"messages\": [{\"role\":\"user|assistant\",\"content\":\"...\"}] }",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChatRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChatResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChatResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChatResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/ForgotPassword/request": {
       "post": {
         "tags": [
@@ -717,6 +621,18 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Order/create": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1106,6 +1022,72 @@
             "description": "OK"
           }
         }
+      },
+      "put": {
+        "tags": [
+          "Seller"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "CompanyName": {
+                    "type": "string"
+                  },
+                  "Address": {
+                    "type": "string"
+                  },
+                  "BankAccountNumber": {
+                    "type": "string"
+                  },
+                  "BankName": {
+                    "type": "string"
+                  },
+                  "AccountHolderName": {
+                    "type": "string"
+                  },
+                  "BankBranch": {
+                    "type": "string"
+                  },
+                  "QRCodeImage": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "CompanyName": {
+                  "style": "form"
+                },
+                "Address": {
+                  "style": "form"
+                },
+                "BankAccountNumber": {
+                  "style": "form"
+                },
+                "BankName": {
+                  "style": "form"
+                },
+                "AccountHolderName": {
+                  "style": "form"
+                },
+                "BankBranch": {
+                  "style": "form"
+                },
+                "QRCodeImage": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/api/Seller/{id}": {
@@ -1130,46 +1112,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "Seller"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSellerRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSellerRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSellerRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Seller"
@@ -1184,6 +1126,18 @@
               "format": "int32"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Seller/me": {
+      "get": {
+        "tags": [
+          "Seller"
         ],
         "responses": {
           "200": {
@@ -1773,48 +1727,6 @@
         },
         "additionalProperties": false
       },
-      "CarbonFootprint": {
-        "type": "object",
-        "properties": {
-          "carbonId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productId": {
-            "maxLength": 15,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "warehouseId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productWeight": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "disposalMethod": {
-            "maxLength": 20,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "carbonValue": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "product": {
-            "$ref": "#/components/schemas/Product"
-          },
-          "warehouse": {
-            "$ref": "#/components/schemas/Warehouse"
-          }
-        },
-        "additionalProperties": false
-      },
       "Cart": {
         "type": "object",
         "properties": {
@@ -1879,6 +1791,10 @@
             "type": "string",
             "nullable": true
           },
+          "sellerId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "quantity": {
             "type": "integer",
             "format": "int32"
@@ -1887,11 +1803,26 @@
             "type": "number",
             "format": "double"
           },
+          "designFile": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "cart": {
             "$ref": "#/components/schemas/Cart"
           },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
           "product": {
             "$ref": "#/components/schemas/Product"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/Seller"
           }
         },
         "additionalProperties": false
@@ -1927,60 +1858,6 @@
             "nullable": true
           },
           "newPassword": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ChatMessage": {
-        "type": "object",
-        "properties": {
-          "role": {
-            "type": "string",
-            "nullable": true
-          },
-          "content": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ChatRequest": {
-        "type": "object",
-        "properties": {
-          "messages": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ChatMessage"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ChatResponse": {
-        "type": "object",
-        "properties": {
-          "reply": {
-            "type": "string",
-            "nullable": true
-          },
-          "error": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "message": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "detail": {
             "type": "string",
             "nullable": true
           }
@@ -2030,20 +1907,6 @@
             "format": "int32"
           },
           "stockQuantity": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "CreateCartItemRequest": {
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "string",
-            "nullable": true
-          },
-          "quantity": {
             "type": "integer",
             "format": "int32"
           }
@@ -2103,24 +1966,17 @@
             },
             "nullable": true
           },
+          "feedbacks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Feedback"
+            },
+            "nullable": true
+          },
           "orders": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Order"
-            },
-            "nullable": true
-          },
-          "reviews": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Review"
-            },
-            "nullable": true
-          },
-          "shippings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Shipping"
             },
             "nullable": true
           },
@@ -2160,6 +2016,45 @@
           },
           "user": {
             "$ref": "#/components/schemas/User"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Feedback": {
+        "type": "object",
+        "properties": {
+          "feedbackId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
+            "maxLength": 15,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reviewDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
           }
         },
         "additionalProperties": false
@@ -2210,45 +2105,6 @@
         },
         "additionalProperties": false
       },
-      "KbUpsertItem": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "nullable": true
-          },
-          "text": {
-            "type": "string",
-            "nullable": true
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "source": {
-            "type": "string",
-            "nullable": true
-          },
-          "tags": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "KbUpsertRequest": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/KbUpsertItem"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "LoginRequest": {
         "type": "object",
         "properties": {
@@ -2267,12 +2123,6 @@
         "type": "object",
         "properties": {
           "orderId": {
-            "maxLength": 20,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "cartId": {
             "type": "integer",
             "format": "int32"
           },
@@ -2280,9 +2130,36 @@
             "type": "integer",
             "format": "int32"
           },
-          "orderTotalPrice": {
+          "sellerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalAmount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPrice": {
             "type": "number",
             "format": "double",
+            "nullable": true
+          },
+          "address": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "transportUnit": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "shippingCode": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
             "nullable": true
           },
           "createdDate": {
@@ -2290,12 +2167,23 @@
             "format": "date-time",
             "nullable": true
           },
+          "updatedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "orderStatus": {
+            "maxLength": 20,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           },
-          "cart": {
-            "$ref": "#/components/schemas/Cart"
+          "cartItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            },
+            "nullable": true
           },
           "customer": {
             "$ref": "#/components/schemas/Customer"
@@ -2307,12 +2195,8 @@
             },
             "nullable": true
           },
-          "shippings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Shipping"
-            },
-            "nullable": true
+          "seller": {
+            "$ref": "#/components/schemas/Seller"
           }
         },
         "additionalProperties": false
@@ -2325,14 +2209,9 @@
             "format": "int32"
           },
           "orderId": {
-            "maxLength": 20,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "paymentMethodId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "amount": {
             "type": "number",
@@ -2344,7 +2223,7 @@
             "type": "string",
             "nullable": true
           },
-          "transactionId": {
+          "transactionCode": {
             "maxLength": 100,
             "minLength": 0,
             "type": "string",
@@ -2352,45 +2231,6 @@
           },
           "order": {
             "$ref": "#/components/schemas/Order"
-          },
-          "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethod"
-          }
-        },
-        "additionalProperties": false
-      },
-      "PaymentMethod": {
-        "type": "object",
-        "properties": {
-          "paymentMethodId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "methodName": {
-            "maxLength": 50,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "methodAccount": {
-            "maxLength": 255,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "payments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Payment"
-            },
-            "nullable": true
-          },
-          "user": {
-            "$ref": "#/components/schemas/User"
           }
         },
         "additionalProperties": false
@@ -2487,24 +2327,10 @@
           "category": {
             "$ref": "#/components/schemas/Category"
           },
-          "carbonFootprints": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CarbonFootprint"
-            },
-            "nullable": true
-          },
           "inventories": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Inventory"
-            },
-            "nullable": true
-          },
-          "reviews": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Review"
             },
             "nullable": true
           },
@@ -2514,26 +2340,12 @@
               "$ref": "#/components/schemas/CartItem"
             },
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "RagChatRequest": {
-        "type": "object",
-        "properties": {
-          "messages": {
+          },
+          "feedbacks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ChatMessage"
+              "$ref": "#/components/schemas/Feedback"
             },
-            "nullable": true
-          },
-          "k": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "system": {
-            "type": "string",
             "nullable": true
           }
         },
@@ -2643,45 +2455,6 @@
         },
         "additionalProperties": false
       },
-      "Review": {
-        "type": "object",
-        "properties": {
-          "reviewId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productId": {
-            "maxLength": 15,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "comment": {
-            "type": "string",
-            "nullable": true
-          },
-          "rating": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "reviewDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "customer": {
-            "$ref": "#/components/schemas/Customer"
-          },
-          "product": {
-            "$ref": "#/components/schemas/Product"
-          }
-        },
-        "additionalProperties": false
-      },
       "Role": {
         "type": "object",
         "properties": {
@@ -2728,6 +2501,48 @@
             "type": "string",
             "nullable": true
           },
+          "bankAccountNumber": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "bankName": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "accountHolderName": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "bankBranch": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "qrcodeImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "cartItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            },
+            "nullable": true
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            },
+            "nullable": true
+          },
           "products": {
             "type": "array",
             "items": {
@@ -2744,61 +2559,6 @@
               "$ref": "#/components/schemas/Warehouse"
             },
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Shipping": {
-        "type": "object",
-        "properties": {
-          "shippingId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "orderId": {
-            "maxLength": 20,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "customerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "warehouseId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "shippingAddress": {
-            "maxLength": 255,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "shippingStatus": {
-            "maxLength": 20,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "createdDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "customer": {
-            "$ref": "#/components/schemas/Customer"
-          },
-          "order": {
-            "$ref": "#/components/schemas/Order"
-          },
-          "warehouse": {
-            "$ref": "#/components/schemas/Warehouse"
           }
         },
         "additionalProperties": false
@@ -2834,20 +2594,6 @@
           "stockQuantity": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateSellerRequest": {
-        "type": "object",
-        "properties": {
-          "companyName": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2926,13 +2672,6 @@
             },
             "nullable": true
           },
-          "paymentMethods": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentMethod"
-            },
-            "nullable": true
-          },
           "registrations": {
             "type": "array",
             "items": {
@@ -3002,13 +2741,6 @@
             "type": "string",
             "nullable": true
           },
-          "carbonFootprints": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CarbonFootprint"
-            },
-            "nullable": true
-          },
           "inventories": {
             "type": "array",
             "items": {
@@ -3018,13 +2750,6 @@
           },
           "seller": {
             "$ref": "#/components/schemas/Seller"
-          },
-          "shippings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Shipping"
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false

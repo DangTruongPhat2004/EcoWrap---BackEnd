@@ -1,103 +1,5 @@
 [
   {
-    "ContainingType": "EcoWrap.API.Program\u002B\u003C\u003Ec",
-    "Method": "\u003CMain\u003Eb__0_12",
-    "RelativePath": "ai/chat",
-    "HttpMethod": "POST",
-    "IsController": false,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "req",
-        "Type": "EcoWrap.Models.AI.ChatRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "EcoWrap.Models.AI.ChatResponse",
-        "MediaTypes": [
-          "application/json"
-        ],
-        "StatusCode": 200
-      },
-      {
-        "Type": "EcoWrap.Models.AI.ChatResponse",
-        "MediaTypes": [
-          "application/json"
-        ],
-        "StatusCode": 400
-      },
-      {
-        "Type": "EcoWrap.Models.AI.ChatResponse",
-        "MediaTypes": [
-          "application/json"
-        ],
-        "StatusCode": 500
-      }
-    ]
-  },
-  {
-    "ContainingType": "EcoWrap.API.Program\u002B\u003C\u003Ec",
-    "Method": "\u003CMain\u003Eb__0_10",
-    "RelativePath": "ai/chat-rag",
-    "HttpMethod": "POST",
-    "IsController": false,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "req",
-        "Type": "EcoWrap.Models.AI.RagChatRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "EcoWrap.API.Program\u002B\u003C\u003Ec",
-    "Method": "\u003CMain\u003Eb__0_8",
-    "RelativePath": "ai/kb/index",
-    "HttpMethod": "POST",
-    "IsController": false,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "req",
-        "Type": "EcoWrap.Models.AI.KbUpsertRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "EcoWrap.API.Program\u002B\u003C\u003Ec",
-    "Method": "\u003CMain\u003Eb__0_6",
-    "RelativePath": "ai/models",
-    "HttpMethod": "GET",
-    "IsController": false,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
     "ContainingType": "EcoWrap.API.Controllers.AdminController",
     "Method": "GetAll",
     "RelativePath": "api/Admin",
@@ -253,9 +155,19 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "request",
-        "Type": "EcoWrap.Models.Request.CreateCartItemRequest",
-        "IsRequired": true
+        "Name": "ProductId",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Quantity",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Design_file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -485,6 +397,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcoWrap.API.Controllers.OrderController",
+    "Method": "CreateOrder",
+    "RelativePath": "api/Order/create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -752,6 +674,52 @@
   },
   {
     "ContainingType": "EcoWrap.API.Controllers.SellerController",
+    "Method": "UpdateSeller",
+    "RelativePath": "api/Seller",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "CompanyName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Address",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "BankAccountNumber",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "BankName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "AccountHolderName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "BankBranch",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "QRCodeImage",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcoWrap.API.Controllers.SellerController",
     "Method": "GetSellerById",
     "RelativePath": "api/Seller/{id}",
     "HttpMethod": "GET",
@@ -761,27 +729,6 @@
       {
         "Name": "id",
         "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "EcoWrap.API.Controllers.SellerController",
-    "Method": "UpdateSeller",
-    "RelativePath": "api/Seller/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "request",
-        "Type": "EcoWrap.Models.Request.UpdateSellerRequest",
         "IsRequired": true
       }
     ],
@@ -801,6 +748,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcoWrap.API.Controllers.SellerController",
+    "Method": "GetMySellerInfo",
+    "RelativePath": "api/Seller/me",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

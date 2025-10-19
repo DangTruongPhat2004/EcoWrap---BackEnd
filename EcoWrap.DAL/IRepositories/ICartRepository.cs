@@ -15,7 +15,7 @@ namespace EcoWrap.DAL.IRepositories
         // Lấy cart đang hoạt động (IsActive = true) của 1 customer
         Task<Cart?> GetActiveCartByCustomerIdAsync(int customerId);
 
-        // ✅ Lấy tất cả carts (kể cả inactive) của 1 customer
+        // Lấy tất cả carts (kể cả inactive) của 1 customer
         Task<IEnumerable<Cart>> GetByCustomerIdAsync(int customerId);
 
         // Thêm cart mới

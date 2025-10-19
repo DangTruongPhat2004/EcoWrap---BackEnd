@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EcoWrap.DAL.Entities;
 
+[Table("Cart")]
 public partial class Cart
 {
     [Key]

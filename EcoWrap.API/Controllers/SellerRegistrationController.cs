@@ -20,7 +20,7 @@ namespace EcoWrap.API.Controllers
 
         // ------------------------- [Gửi đơn đăng ký người bán] -------------------------
         [HttpPost("register")]
-        [Authorize] // Chỉ user đã đăng nhập mới được gửi đơn
+        [Authorize] 
         public async Task<IActionResult> RegisterSeller([FromForm] RegisterSellerRequest request)
         {
             try
@@ -60,7 +60,7 @@ namespace EcoWrap.API.Controllers
 
         // ------------------------- [Lấy danh sách đơn của 1 người dùng] -------------------------
         [HttpGet("user/{userId:int}")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetRegistrationsByUser(int userId)
         {
             if (userId <= 0)
@@ -72,7 +72,7 @@ namespace EcoWrap.API.Controllers
 
         // ------------------------- [Lấy đơn đăng ký theo ID] -------------------------
         [HttpGet("{registrationId:int}")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetById(int registrationId)
         {
             if (registrationId <= 0)

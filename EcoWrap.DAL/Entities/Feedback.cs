@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EcoWrap.DAL.Entities;
 
-[Table("Review")]
-public partial class Review
+[Table("Feedback")]
+public partial class Feedback
 {
     [Key]
-    [Column("Review_id")]
-    public int ReviewId { get; set; }
+    [Column("Feedback_id")]
+    public int FeedbackId { get; set; }
 
     [Column("Customer_id")]
     public int CustomerId { get; set; }
@@ -29,10 +29,10 @@ public partial class Review
     public DateTime? ReviewDate { get; set; }
 
     [ForeignKey("CustomerId")]
-    [InverseProperty("Reviews")]
+    [InverseProperty("Feedbacks")]
     public virtual Customer Customer { get; set; } = null!;
 
     [ForeignKey("ProductId")]
-    [InverseProperty("Reviews")]
+    [InverseProperty("Feedbacks")]
     public virtual Product Product { get; set; } = null!;
 }

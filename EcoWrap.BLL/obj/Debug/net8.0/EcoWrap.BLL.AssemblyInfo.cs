@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EcoWrap.BLL")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2fb5506f7d89885e2c3fc8cc0071fe47f008e3b9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+84251b9a511e481f2503f1070275eb15f6bed843")]
 [assembly: System.Reflection.AssemblyProductAttribute("EcoWrap.BLL")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EcoWrap.BLL")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
