@@ -1,4 +1,9 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
 public enum AssetCategory : byte
 {
     Icon = 1,
@@ -8,6 +13,7 @@ public enum AssetCategory : byte
 
 public class DesignAsset
 {
+    [Key]
     public int Id { get; set; }
     public string Name { get; set; } = default!;
     public string Slug { get; set; } = default!;

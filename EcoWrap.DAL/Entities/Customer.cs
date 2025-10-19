@@ -16,9 +16,6 @@ public partial class Customer
     [Column("User_id")]
     public int UserId { get; set; }
 
-    [StringLength(255)]
-    public string? Address { get; set; }
-
     [InverseProperty("Customer")]
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
@@ -26,13 +23,10 @@ public partial class Customer
     public virtual ICollection<Collection> Collections { get; set; } = new List<Collection>();
 
     [InverseProperty("Customer")]
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+
+    [InverseProperty("Customer")]
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-
-    [InverseProperty("Customer")]
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-
-    [InverseProperty("Customer")]
-    public virtual ICollection<Shipping> Shippings { get; set; } = new List<Shipping>();
 
     [ForeignKey("UserId")]
     [InverseProperty("Customers")]

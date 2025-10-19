@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using EcoWrap.BLL.IServices;
 using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
+using EcoWrap.Models.Response;
 using Microsoft.AspNetCore.Identity;
 
 namespace EcoWrap.BLL.Services
@@ -19,14 +20,37 @@ namespace EcoWrap.BLL.Services
             _passwordHasher = passwordHasher;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
         {
-            return await _userRepository.GetAllAsync();
+            var users = await _userRepository.GetAllAsync();
+
+            return users.Select(u => new UserResponse
+            {
+                UserId = u.UserId,
+                RoleId = u.RoleId,            
+                Username = u.Username,
+                Email = u.Email,
+                FullName = u.FullName,
+                PhoneNumber = u.PhoneNumber,
+                IsVerified = u.IsVerified
+            });
         }
 
-        public async Task<User?> GetUserByIdAsync(int id)
+        public async Task<UserResponse?> GetUserByIdAsync(int id)
         {
-            return await _userRepository.GetByIdAsync(id);
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null) return null;
+
+            return new UserResponse
+            {
+                UserId = user.UserId,
+                RoleId = user.RoleId,         
+                Username = user.Username,
+                Email = user.Email,
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                IsVerified = user.IsVerified
+            };
         }
 
         public async Task UpdateUserAsync(User user)

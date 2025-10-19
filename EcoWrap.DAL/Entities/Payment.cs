@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EcoWrap.DAL.Entities;
 
 [Table("Payment")]
-[Index("TransactionId", Name = "UQ__Payment__9A8C4A3CC7284D51", IsUnique = true)]
+[Index("TransactionCode", Name = "UQ__Payment__5DB04AC31166E0C8", IsUnique = true)]
 public partial class Payment
 {
     [Key]
@@ -15,12 +15,7 @@ public partial class Payment
     public int PaymentId { get; set; }
 
     [Column("Order_id")]
-    [StringLength(20)]
-    [Unicode(false)]
-    public string OrderId { get; set; } = null!;
-
-    [Column("Payment_method_id")]
-    public int PaymentMethodId { get; set; }
+    public int? OrderId { get; set; }
 
     [Column(TypeName = "decimal(10, 2)")]
     public decimal Amount { get; set; }
@@ -29,16 +24,12 @@ public partial class Payment
     [StringLength(20)]
     public string PaymentStatus { get; set; } = null!;
 
-    [Column("Transaction_id")]
+    [Column("Transaction_code")]
     [StringLength(100)]
     [Unicode(false)]
-    public string? TransactionId { get; set; }
+    public string? TransactionCode { get; set; }
 
     [ForeignKey("OrderId")]
     [InverseProperty("Payments")]
-    public virtual Order Order { get; set; } = null!;
-
-    [ForeignKey("PaymentMethodId")]
-    [InverseProperty("Payments")]
-    public virtual PaymentMethod PaymentMethod { get; set; } = null!;
+    public virtual Order? Order { get; set; }
 }

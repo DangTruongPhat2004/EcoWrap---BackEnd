@@ -13,6 +13,9 @@ public partial class Warehouse
     [Column("Warehouse_id")]
     public int WarehouseId { get; set; }
 
+    [Column("Warehouse_name")]
+    public string WarehouseName { get; set; } = null!;
+
     [Column("Seller_id")]
     public int SellerId { get; set; }
 
@@ -20,15 +23,9 @@ public partial class Warehouse
     public string? Address { get; set; }
 
     [InverseProperty("Warehouse")]
-    public virtual ICollection<CarbonFootprint> CarbonFootprints { get; set; } = new List<CarbonFootprint>();
-
-    [InverseProperty("Warehouse")]
     public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
 
     [ForeignKey("SellerId")]
     [InverseProperty("Warehouses")]
     public virtual Seller Seller { get; set; } = null!;
-
-    [InverseProperty("Warehouse")]
-    public virtual ICollection<Shipping> Shippings { get; set; } = new List<Shipping>();
 }

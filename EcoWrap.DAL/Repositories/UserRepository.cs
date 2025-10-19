@@ -15,12 +15,20 @@ namespace EcoWrap.DAL.Repositories
 
         public async Task<IEnumerable<User>> GetAllAsync()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users
+                .Include(u => u.Customers)
+                .Include(u => u.Sellers)
+                .Include(u => u.Admins)
+                .ToListAsync();
         }
 
         public async Task<User?> GetByIdAsync(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _context.Users
+                .Include(u => u.Customers)
+                .Include(u => u.Sellers)
+                .Include(u => u.Admins)
+                .FirstOrDefaultAsync(u => u.UserId == id);
         }
 
         public async Task<User?> GetByUsernameAsync(string username)

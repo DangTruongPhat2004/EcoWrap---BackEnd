@@ -27,7 +27,7 @@ namespace EcoWrap.API.Controllers
                 var token = await _authenticationService.LoginAsync(request);
 
                 if (token == null)
-                    return Unauthorized(new { Message = "Sai Username hoặc Password!" });
+                    return Unauthorized(new { Message = "Tên đăng nhập hoặc mật khẩu không đúng." });
 
                 return Ok(new { Token = token });
             }

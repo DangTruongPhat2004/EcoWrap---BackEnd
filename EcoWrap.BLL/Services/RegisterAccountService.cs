@@ -43,26 +43,23 @@ namespace EcoWrap.BLL.Services
             if (existedUserByEmail != null)
             {
                 if (existedUserByEmail.IsVerified)
-                {
                     return false;
-                }
-                else
-                {
-                    _dbContext.Users.Remove(existedUserByEmail);
 
-                    var oldCustomer = await _customerRepository.GetByUserIdAsync(existedUserByEmail.UserId);
-                    if (oldCustomer != null)
-                        _dbContext.Customers.Remove(oldCustomer);
+                // Xóa user chưa xác thực
+                _dbContext.Users.Remove(existedUserByEmail);
 
-                    var oldVerifications = await _verificationRepository.GetByUserIdAsync(existedUserByEmail.UserId);
-                    if (oldVerifications.Any())
-                        _dbContext.EmailVerifications.RemoveRange(oldVerifications);
+                var oldCustomer = await _customerRepository.GetByUserIdAsync(existedUserByEmail.UserId);
+                if (oldCustomer != null)
+                    _dbContext.Customers.Remove(oldCustomer);
 
-                    await _dbContext.SaveChangesAsync();
-                }
+                var oldVerifications = await _verificationRepository.GetByUserIdAsync(existedUserByEmail.UserId);
+                if (oldVerifications.Any())
+                    _dbContext.EmailVerifications.RemoveRange(oldVerifications);
+
+                await _dbContext.SaveChangesAsync();
             }
 
-            // 2. Hash password bằng IPasswordHasher 
+            // 2. Tạo User mới với RoleId = 2 (Customer)
             var newUser = new User
             {
                 Username = request.Username,
@@ -70,7 +67,8 @@ namespace EcoWrap.BLL.Services
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
                 RegistrationDate = DateTime.UtcNow,
-                IsVerified = false
+                IsVerified = false,
+                RoleId = 2 // Customer
             };
             newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password);
 
@@ -99,7 +97,6 @@ namespace EcoWrap.BLL.Services
                 };
                 await _verificationRepository.AddAsync(verification);
 
-                // Save tất cả 1 lần
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -108,9 +105,9 @@ namespace EcoWrap.BLL.Services
                     newUser.Email,
                     "EcoWrap - Email Verification",
                     $@"
-                        Xin chào {newUser.FullName ?? newUser.Username},<br/>
-                        Mã xác nhận của bạn là: <b>{confirmCode}</b><br/>
-                        Mã này sẽ hết hạn sau 15 phút."
+                Xin chào {newUser.FullName ?? newUser.Username},<br/>
+                Mã xác nhận của bạn là: <b>{confirmCode}</b><br/>
+                Mã này sẽ hết hạn sau 15 phút."
                 );
 
                 return true;

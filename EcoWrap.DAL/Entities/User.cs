@@ -14,6 +14,9 @@ public partial class User
     [Column("User_id")]
     public int UserId { get; set; }
 
+    [Column("Role_id")]
+    public int RoleId { get; set; }
+
     [StringLength(50)]
     public string Username { get; set; } = null!;
 
@@ -46,13 +49,16 @@ public partial class User
     public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 
     [InverseProperty("User")]
-    public virtual ICollection<PaymentMethod> PaymentMethods { get; set; } = new List<PaymentMethod>();
-
-    [InverseProperty("User")]
     public virtual ICollection<Registration> Registrations { get; set; } = new List<Registration>();
 
     [InverseProperty("User")]
     public virtual ICollection<Seller> Sellers { get; set; } = new List<Seller>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<Admin> Admins { get; set; } = new List<Admin>();
+
+    [ForeignKey("RoleId")]
+    public virtual Role Role { get; set; } = null!;
 
     [InverseProperty("User")]
     public virtual ICollection<EmailVerification> EmailVerifications { get; set; } = new List<EmailVerification>();

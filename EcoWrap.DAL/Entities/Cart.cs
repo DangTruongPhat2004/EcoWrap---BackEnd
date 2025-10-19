@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace EcoWrap.DAL.Entities;
 
@@ -13,26 +13,25 @@ public partial class Cart
     [Column("Cart_id")]
     [StringLength(10)]
     [Unicode(false)]
-    public string CartId { get; set; } = null!;
-
-    [Column("Product_id")]
-    [StringLength(15)]
-    [Unicode(false)]
-    public string ProductId { get; set; } = null!;
+    public int CartId { get; set; }
 
     [Column("Customer_id")]
     public int CustomerId { get; set; }
 
-    [Column("Total_price", TypeName = "decimal(18, 2)")]
-    public decimal? TotalPrice { get; set; }
+    [Column("Cart_total_price")]
+    public decimal? CartTotalPrice { get; set; }
 
-    public int? Quantity { get; set; }
+    [Column("Created_date", TypeName = "datetime")]
+    public DateTime? CreatedDate { get; set; }
+
+    [Column("IsActive")]
+    public bool? IsActive { get; set; }
+
+    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
     [ForeignKey("CustomerId")]
     [InverseProperty("Carts")]
     public virtual Customer Customer { get; set; } = null!;
 
-    [ForeignKey("ProductId")]
-    [InverseProperty("Carts")]
-    public virtual Product Product { get; set; } = null!;
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

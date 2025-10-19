@@ -33,6 +33,8 @@ using EcoWrap.Models.Designs;
 
 
 
+using System.Security.Claims;
+using EcoWrap.Models.Config;
 
 namespace EcoWrap.API
 {
@@ -41,8 +43,11 @@ namespace EcoWrap.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+            .AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+            });
 
             // ===== CORS cho FE Vite (http/https 5173) =====
             var DevCors = "DevCors";
@@ -70,21 +75,41 @@ namespace EcoWrap.API
             builder.Services.AddSingleton(new Cloudinary(cloudinaryAccount));
 
             // ===== Repositories =====
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IRegisterAccountRepository, RegisterAccountRepository>();
-            builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
+            builder.Services.AddScoped<IAdminRepository, AdminRepository>();
             builder.Services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
+            builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
+            builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IRegisterAccountRepository, RegisterAccountRepository>();
+            builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
+            builder.Services.AddScoped<ISellerRepository, SellerRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 
             // ===== Services =====
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IRegisterAccountService, RegisterAccountService>();
-            builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
-            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-            builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
-            builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<ICartItemService, CartItemService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
             builder.Services.AddScoped<IEmbeddingService, EmbeddingService>(); // Embeddings
+            builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
+            builder.Services.AddScoped<IInventoryService, InventoryService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IRegisterAccountService, RegisterAccountService>();
+            builder.Services.AddScoped<ISellerRegistrationService, SellerRegistrationService>();
+            builder.Services.AddScoped<ISellerService, SellerService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+            builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
             // ===== JWT Auth =====
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -99,7 +124,8 @@ namespace EcoWrap.API
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? ""))
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "")),
+                        RoleClaimType = ClaimTypes.Role
                     };
 
                     // ✅ THIS IS THE FIX FOR SIGNALR AUTHENTICATION

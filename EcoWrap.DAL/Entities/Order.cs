@@ -10,33 +10,52 @@ public partial class Order
 {
     [Key]
     [Column("Order_id")]
-    [StringLength(20)]
-    [Unicode(false)]
-    public string OrderId { get; set; } = null!;
+    public int OrderId { get; set; }
 
     [Column("Customer_id")]
     public int CustomerId { get; set; }
 
-    [Column("Order_date", TypeName = "datetime")]
-    public DateTime? OrderDate { get; set; }
+    [Column("Seller_id")]
+    public int SellerId { get; set; }
 
     [Column("Total_amount")]
     public int? TotalAmount { get; set; }
 
+    [Column("Total_price", TypeName = "decimal(18, 2)")]
+    public decimal? TotalPrice { get; set; }
+
+    [StringLength(255)]
+    public string? Address { get; set; }
+
+    [Column("Transport_unit")]
+    [StringLength(255)]
+    public string? TransportUnit { get; set; }
+
+    [Column("Shipping_code")]
+    [StringLength(255)]
+    public string? ShippingCode { get; set; }
+
+    [Column("Created_date", TypeName = "datetime")]
+    public DateTime? CreatedDate { get; set; }
+
+    [Column("Updated_Date", TypeName = "datetime")]
+    public DateTime? UpdatedDate { get; set; }
+
     [Column("Order_status")]
     [StringLength(20)]
     public string OrderStatus { get; set; } = null!;
+
+    [InverseProperty("Order")]
+    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
     [ForeignKey("CustomerId")]
     [InverseProperty("Orders")]
     public virtual Customer Customer { get; set; } = null!;
 
     [InverseProperty("Order")]
-    public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-
-    [InverseProperty("Order")]
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
-    [InverseProperty("Order")]
-    public virtual ICollection<Shipping> Shippings { get; set; } = new List<Shipping>();
+    [ForeignKey("SellerId")]
+    [InverseProperty("Orders")]
+    public virtual Seller Seller { get; set; } = null!;
 }
