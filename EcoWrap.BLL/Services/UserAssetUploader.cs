@@ -12,6 +12,7 @@ public class UserAssetUploader
     private readonly EcoWrapDbContext _db;
     private readonly IConfiguration _cfg;
 
+
     public UserAssetUploader(EcoWrapDbContext db, IConfiguration cfg)
     {
         _db = db; _cfg = cfg;
@@ -22,7 +23,7 @@ public class UserAssetUploader
         ));
     }
 
-    public async Task<UploadUserAssetResponse> UploadAsync(Guid userId, IFormFile file, string? name, string? tags, CancellationToken ct)
+    public async Task<UploadUserAssetResponse> UploadAsync(long userId, IFormFile file, string? name, string? tags, CancellationToken ct)
     {
         if (file == null || file.Length == 0) throw new InvalidOperationException("File is required.");
         if (file.Length > 5 * 1024 * 1024) throw new InvalidOperationException("Max 5MB.");

@@ -1,32 +1,38 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using Amazon.S3;
+using Azure.Storage.Blobs;
+using EcoWrap.API.Realtime;
+using EcoWrap.BLL.IServices;
+using EcoWrap.BLL.Services;
+using EcoWrap.BLL.Services.Chat;
+using EcoWrap.BLL.Validation;
+using EcoWrap.DAL.Entities;
+using EcoWrap.DAL.IRepositories;
+using EcoWrap.DAL.Repositories;
+using EcoWrap.DAL.Repositories.Chat;
+using EcoWrap.Infrastructure.Sanitization;
+using EcoWrap.Infrastructure.Storage;
+using EcoWrap.Models.AI; // DTO: ChatRequest/ChatResponse/RagChatRequest/KbUpsertRequest
+using EcoWrap.Models.Templates;
+using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
-using System.Linq;
-
-using EcoWrap.DAL.Entities;
-using EcoWrap.DAL.Repositories;
-using EcoWrap.DAL.IRepositories;
-
-using EcoWrap.BLL.Services;
-using EcoWrap.BLL.IServices;
-
-using EcoWrap.Models.AI; // DTO: ChatRequest/ChatResponse/RagChatRequest/KbUpsertRequest
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.OpenApi;
-
+using System.Text;
+using System.Text.Json;
 using AiChatRequest = EcoWrap.Models.AI.ChatRequest;
 using AiChatResponse = EcoWrap.Models.AI.ChatResponse;
+using CloudinaryDotNet;
+using EcoWrap.Models.Designs;
 
 
-using EcoWrap.API.Realtime;
 
-using EcoWrap.BLL.Services.Chat;
-using EcoWrap.DAL.Repositories.Chat;
+
 
 namespace EcoWrap.API
 {
@@ -35,6 +41,7 @@ namespace EcoWrap.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            
             builder.Services.AddControllers();
 
             // ===== CORS cho FE Vite (http/https 5173) =====
@@ -53,6 +60,14 @@ namespace EcoWrap.API
                     .AllowCredentials()
                 );
             });
+
+            var cloudinaryAccount = new Account(
+    builder.Configuration["Storage:Cloudinary:CloudName"],
+    builder.Configuration["Storage:Cloudinary:ApiKey"],
+    builder.Configuration["Storage:Cloudinary:ApiSecret"]
+);
+            var cloudinary = new Cloudinary(cloudinaryAccount);
+            builder.Services.AddSingleton(new Cloudinary(cloudinaryAccount));
 
             // ===== Repositories =====
             builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -171,6 +186,12 @@ namespace EcoWrap.API
             // Services
             builder.Services.AddScoped<IConversationService, ConversationService>();
             builder.Services.AddScoped<IMessageService, MessageService>();
+            builder.Services.AddScoped<ITemplateService, TemplateService>();
+            builder.Services.AddSingleton<ISvgSanitizer, SvgSanitizer>();
+            builder.Services.AddScoped<IValidator<MyAssetsQueryDto>, MyAssetsQueryValidator>();
+            builder.Services.AddScoped<IValidator<CreateDesignDto>, CreateDesignValidator>();
+            builder.Services.AddScoped<IValidator<UpdateDesignDto>, UpdateDesignValidator>();
+            builder.Services.AddScoped<ICustomDesignsService, CustomDesignsService>();
 
 
 
@@ -181,7 +202,45 @@ namespace EcoWrap.API
                 c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
 
+            // ===== S3 Client (cho Storage) =====
+            builder.Services.AddSingleton<IFileStorage>(sp =>
+            {
+                var cfg = sp.GetRequiredService<IConfiguration>().GetSection("Storage");
+                var cl = cfg.GetSection("Cloudinary");
+                var cloudName = cl["CloudName"]!;
+                var apiKey = cl["ApiKey"]!;
+                var apiSecret = cl["ApiSecret"]!;
+                var folder = cl["Folder"];
+
+                var account = new Account(cloudName, apiKey, apiSecret);
+                var cld = new Cloudinary(account);
+                // (tuỳ) cld.Api.Secure = true;  // đảm bảo https
+
+                var immutable = int.TryParse(cfg["Cache:ImmutableSeconds"], out var im) ? im : 31536000;
+                var statc = int.TryParse(cfg["Cache:StaticSeconds"], out var st) ? st : 86400;
+
+                return new CloudinaryFileStorage(cld, folder, immutable, statc);
+            });
+
+            // storage options + validate
+
+            builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
+           
+
+            builder.Services.AddSingleton<IAssetUrlBuilder, AssetUrlBuilder>();
+            builder.Services.AddScoped<IValidator<LibraryQueryDto>, LibraryQueryValidator>();
+
+            builder.Services.AddHttpClient();
+            builder.Services.AddScoped<AssetSyncService>();
+            builder.Services.AddScoped<UserAssetUploader>();
+
+
+            // Validator for admin
+            builder.Services.AddValidatorsFromAssembly(typeof(AdminCreateTemplateValidator).Assembly);
+
+
             var app = builder.Build();
+           
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage(); // show stacktrace trong browser
@@ -335,7 +394,7 @@ Bạn là EcoWrap AI – trợ lý bao bì bền vững. Trả lời ngắn gọ
                     }
                 };
                 var httpReq = new HttpRequestMessage(
-     HttpMethod.Post,
+     System.Net.Http.HttpMethod.Post,
      $"{apiVersion}/{model}:generateContent?key={key}"
  )
                 {
@@ -385,7 +444,7 @@ Bạn là EcoWrap AI – trợ lý bao bì bền vững. Trả lời ngắn gọ
                 var model = "models/gemini-2.5-flash"; // Default model
 
                 var httpReq = new HttpRequestMessage(
-    HttpMethod.Post,
+    System.Net.Http.HttpMethod.Post,
     $"v1/{model}:generateContent?key={googleApiKey}")
                 {
                     Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")

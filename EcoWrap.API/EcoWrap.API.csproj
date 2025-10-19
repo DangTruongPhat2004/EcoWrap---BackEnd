@@ -7,7 +7,16 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
+		<PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
+		<PackageReference Include="FluentValidation" Version="12.0.0" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
 	</ItemGroup>
 	
 
@@ -29,6 +38,8 @@
     <ProjectReference Include="..\EcoWrap.BLL\EcoWrap.BLL.csproj">
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\EcoWrap.Infrastructure\EcoWrap.Infrastructure.csproj" />
+    <ProjectReference Include="..\EcoWrap.DAL\EcoWrap.DAL.csproj" />
   </ItemGroup>
 
 </Project>

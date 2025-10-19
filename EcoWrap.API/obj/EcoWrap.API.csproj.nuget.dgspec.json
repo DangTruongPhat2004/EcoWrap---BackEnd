@@ -34,6 +34,12 @@
             "projectReferences": {
               "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj": {
                 "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.BLL\\EcoWrap.BLL.csproj"
+              },
+              "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj": {
+                "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.DAL\\EcoWrap.DAL.csproj"
+              },
+              "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Infrastructure\\EcoWrap.Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Infrastructure\\EcoWrap.Infrastructure.csproj"
               }
             }
           }
@@ -54,6 +60,22 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Azure.Storage.Blobs": {
+              "target": "Package",
+              "version": "[12.26.0, )"
+            },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.8, )"
+            },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[12.0.0, )"
+            },
+            "FluentValidation.DependencyInjectionExtensions": {
+              "target": "Package",
+              "version": "[11.9.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.20, )"
@@ -66,6 +88,12 @@
               "target": "Package",
               "version": "[9.0.9, )"
             },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[9.0.9, )"
@@ -75,6 +103,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[9.0.9, )"
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[9.0.10, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
@@ -157,6 +189,14 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.8, )"
+            },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.9.0, )"
+            },
             "Microsoft.Extensions.Http": {
               "target": "Package",
               "version": "[8.0.0, )"
@@ -251,6 +291,93 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[9.0.9, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Infrastructure\\EcoWrap.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Infrastructure\\EcoWrap.Infrastructure.csproj",
+        "projectName": "EcoWrap.Infrastructure",
+        "projectPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Infrastructure\\EcoWrap.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\DAT\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\DAT\\Desktop\\EcoWrap---BackEnd-Backend\\EcoWrap---BackEnd-Backend\\EcoWrap.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\DAT\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AWSSDK.S3": {
+              "target": "Package",
+              "version": "[4.0.7.9, )"
+            },
+            "Azure.Storage.Blobs": {
+              "target": "Package",
+              "version": "[12.26.0, )"
+            },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.8, )"
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[8.0.0, )"
             }
           },
           "imports": [

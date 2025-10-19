@@ -24,5 +24,7 @@
     <PkgMicrosoft_Extensions_ApiDescription_Server Condition=" '$(PkgMicrosoft_Extensions_ApiDescription_Server)' == '' ">C:\Users\DAT\.nuget\packages\microsoft.extensions.apidescription.server\8.0.0</PkgMicrosoft_Extensions_ApiDescription_Server>
     <PkgMicrosoft_CodeAnalysis_Analyzers Condition=" '$(PkgMicrosoft_CodeAnalysis_Analyzers)' == '' ">C:\Users\DAT\.nuget\packages\microsoft.codeanalysis.analyzers\3.3.4</PkgMicrosoft_CodeAnalysis_Analyzers>
     <PkgMicrosoft_EntityFrameworkCore_Tools Condition=" '$(PkgMicrosoft_EntityFrameworkCore_Tools)' == '' ">C:\Users\DAT\.nuget\packages\microsoft.entityframeworkcore.tools\9.0.9</PkgMicrosoft_EntityFrameworkCore_Tools>
+    <PkgAWSSDK_Core Condition=" '$(PkgAWSSDK_Core)' == '' ">C:\Users\DAT\.nuget\packages\awssdk.core\4.0.1</PkgAWSSDK_Core>
+    <PkgAWSSDK_S3 Condition=" '$(PkgAWSSDK_S3)' == '' ">C:\Users\DAT\.nuget\packages\awssdk.s3\4.0.7.9</PkgAWSSDK_S3>
   </PropertyGroup>
 </Project>
