@@ -27,7 +27,7 @@ namespace EcoWrap.BLL.Services
             var payload = new
             {
                 content = new { parts = new[] { new { text } } },
-                task_type =  taskType // hoặc RETRIEVAL_QUERY khi embed câu hỏi
+                task_type = taskType // hoặc RETRIEVAL_QUERY khi embed câu hỏi
             };
 
             var req = new HttpRequestMessage(HttpMethod.Post, url)
