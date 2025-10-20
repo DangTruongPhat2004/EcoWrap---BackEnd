@@ -15,9 +15,6 @@ public partial class Order
     [Column("Customer_id")]
     public int CustomerId { get; set; }
 
-    [Column("Seller_id")]
-    public int SellerId { get; set; }
-
     [Column("Total_amount")]
     public int? TotalAmount { get; set; }
 
@@ -54,8 +51,4 @@ public partial class Order
 
     [InverseProperty("Order")]
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-
-    [ForeignKey("SellerId")]
-    [InverseProperty("Orders")]
-    public virtual Seller Seller { get; set; } = null!;
 }

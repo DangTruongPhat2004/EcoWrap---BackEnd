@@ -19,9 +19,6 @@ public class CartItem
     [Unicode(false)]
     public string ProductId { get; set; } = null!;
 
-    [Column("Seller_id")]
-    public int SellerId { get; set; }
-
     [Column("Quantity")]
     public int Quantity { get; set; }
 
@@ -45,8 +42,4 @@ public class CartItem
     [ForeignKey("ProductId")]
     [InverseProperty("CartItems")]
     public virtual Product Product { get; set; } = null!;
-
-    [ForeignKey("SellerId")]
-    [InverseProperty("CartItems")]
-    public virtual Seller Seller { get; set; } = null!;
 }

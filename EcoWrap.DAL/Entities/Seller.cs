@@ -39,12 +39,6 @@ public partial class Seller
     public string? QrcodeImage { get; set; }
 
     [InverseProperty("Seller")]
-    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
-
-    [InverseProperty("Seller")]
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-
-    [InverseProperty("Seller")]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
     [ForeignKey("UserId")]

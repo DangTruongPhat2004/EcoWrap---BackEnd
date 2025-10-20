@@ -114,7 +114,6 @@ namespace EcoWrap.BLL.Services
             {
                 CartId = cart.CartId,
                 ProductId = request.ProductId,
-                SellerId = sellerId,
                 Quantity = request.Quantity,
                 CartItemPrice = request.Quantity * product.ProductPrice,
                 DesignFile = designFileUrl
@@ -137,7 +136,6 @@ namespace EcoWrap.BLL.Services
                     product.ProductPrice,
                     cartItem.Quantity,
                     cartItem.CartItemPrice,
-                    cartItem.SellerId,
                     cartItem.DesignFile
                 }
             };
@@ -190,7 +188,6 @@ namespace EcoWrap.BLL.Services
                     cartItem.CartItemId,
                     cartItem.CartId,
                     cartItem.ProductId,
-                    ProductName = product.ProductName,
                     product.ProductPrice,
                     cartItem.Quantity,
                     cartItem.CartItemPrice

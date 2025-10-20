@@ -1,6 +1,6 @@
 ﻿using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcoWrap.DAL.Repositories
 {
@@ -13,14 +13,11 @@ namespace EcoWrap.DAL.Repositories
             _context = context;
         }
 
-        public async Task AddAsync(Order order)
+        public async Task<Order> CreateOrderAsync(Order order)
         {
-            await _context.Orders.AddAsync(order);
-        }
-
-        public async Task SaveChangesAsync()
-        {
+            _context.Orders.Add(order);
             await _context.SaveChangesAsync();
+            return order;
         }
     }
 }
