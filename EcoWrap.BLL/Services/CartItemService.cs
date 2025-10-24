@@ -15,19 +15,22 @@ namespace EcoWrap.BLL.Services
         private readonly IInventoryRepository _inventoryRepo;
         private readonly ICartRepository _cartRepo;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly ICustomerRepository _customerRepo;
 
         public CartItemService(
             ICartItemRepository cartItemRepo,
             IProductRepository productRepo,
             IInventoryRepository inventoryRepo,
             ICartRepository cartRepo,
-            CloudinaryService cloudinaryService)
+            CloudinaryService cloudinaryService,
+            ICustomerRepository customerRepo)
         {
             _cartItemRepo = cartItemRepo;
             _productRepo = productRepo;
             _inventoryRepo = inventoryRepo;
             _cartRepo = cartRepo;
             _cloudinaryService = cloudinaryService;
+            _customerRepo = customerRepo;
         }
 
         // -------------------- [PRIVATE METHOD - CHECK CART OWNERSHIP] --------------------
@@ -51,13 +54,16 @@ namespace EcoWrap.BLL.Services
             if (request.Quantity <= 0)
                 throw new InvalidOperationException("Số lượng sản phẩm phải lớn hơn 0.");
 
+            var customer = await _customerRepo.GetByUserIdAsync(userId)
+                ?? throw new InvalidOperationException("Không tìm thấy thông tin khách hàng cho tài khoản này.");
+
             // Lấy giỏ hàng active của user, nếu chưa có thì tạo mới
-            var cart = await _cartRepo.GetActiveCartByCustomerIdAsync(userId);
+            var cart = await _cartRepo.GetActiveCartByCustomerIdAsync(customer.CustomerId);
             if (cart == null)
             {
                 cart = new Cart
                 {
-                    CustomerId = userId,
+                    CustomerId = customer.CustomerId,
                     CreatedDate = DateTime.Now,
                     IsActive = true,
                     CartTotalPrice = 0
@@ -214,6 +220,19 @@ namespace EcoWrap.BLL.Services
             await UpdateCartTotalPriceAsync(cartId);
 
             return true;
+        }
+
+        public async Task<List<CartItem>> GetCartItemsByOrderIdAsync(int orderId)
+        {
+            var items = await _cartItemRepo.GetByOrderIdAsync(orderId);
+
+            if (items == null || !items.Any())
+            {
+                // Tùy chọn: có thể throw exception hoặc chỉ trả về danh sách trống
+                throw new InvalidOperationException($"Không tìm thấy sản phẩm nào cho Order ID: {orderId}.");
+            }
+
+            return items;
         }
 
         // -------------------- [PRIVATE METHOD - UPDATE CART TOTAL PRICE] --------------------

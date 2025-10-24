@@ -72,15 +72,12 @@ public partial class EcoWrapDbContext : DbContext
     public DbSet<TemplateVersion> TemplateVersions => Set<TemplateVersion>();
     public DbSet<UserAsset> UserAssets { get; set; } = default!;
 
-
     //design
     public DbSet<Custom> Customs => Set<Custom>();
     public DbSet<CustomAsset> CustomAssets => Set<CustomAsset>();
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost;uid=sa;pwd=123456;Database=EcoWrap;Trusted_Connection=True;TrustServerCertificate=True;");
-
+       => optionsBuilder.UseSqlServer("Server=localhost;uid=sa;pwd=123456;Database=EcoWrap;Trusted_Connection=True;TrustServerCertificate=True;");
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // luôn đặt ở đầu, KHÔNG đặt trong từng entity
@@ -341,6 +338,14 @@ public partial class EcoWrapDbContext : DbContext
         modelBuilder.Entity<Warehouse>(entity =>
         {
             entity.HasKey(e => e.WarehouseId).HasName("PK__Warehous__3D93DCBC8488B8D7");
+
+            // <<< BỔ SUNG CẤU HÌNH ĐỘ DÀI TRƯỜNG >>>
+            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+            entity.Property(e => e.Address).HasMaxLength(255);
+            entity.Property(e => e.ProvinceId).HasMaxLength(255);
+            entity.Property(e => e.DistrictId).HasMaxLength(255);
+            entity.Property(e => e.WardId).HasMaxLength(255);
+            // <<< HẾT BỔ SUNG >>>
 
             entity.HasOne(d => d.Seller).WithMany(p => p.Warehouses)
                 .OnDelete(DeleteBehavior.ClientSetNull)

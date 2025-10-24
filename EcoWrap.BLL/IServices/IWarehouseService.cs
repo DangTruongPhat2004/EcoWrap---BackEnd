@@ -12,6 +12,8 @@ namespace EcoWrap.BLL.IServices
         Task<bool> CreateWarehouseAsync(int userId, CreateWarehouseRequest request);
         Task<bool> UpdateWarehouseAsync(int warehouseId, int userId, UpdateWarehouseRequest request);
         Task<IEnumerable<Warehouse>> GetWarehousesBySellerAsync(int userId);
-        Task<bool> DeleteAsync(int id);
+
+        // [SỬA ĐỔI] Cập nhật chữ ký (signature) của hàm DeleteAsync
+        Task<bool> DeleteAsync(int warehouseId, int userId);
     }
 }

@@ -76,7 +76,10 @@ namespace EcoWrap.BLL.Services
 
             return true;
         }
-
+        public async Task<User?> GetUserEntityByIdAsync(int id)
+        {
+            return await _userRepository.GetByIdAsync(id);
+        }
         public async Task DeleteUserAsync(int id)
         {
             var existingUser = await _userRepository.GetByIdAsync(id);

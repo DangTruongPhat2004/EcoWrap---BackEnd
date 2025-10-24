@@ -126,8 +126,18 @@ namespace EcoWrap.API.Controllers
         {
             try
             {
-                await _warehouseService.DeleteAsync(id);
+                // [SỬA ĐỔI] Lấy userId từ token
+                int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
+          ?? throw new UnauthorizedAccessException("Không tìm thấy thông tin người dùng."));
+
+                // [SỬA ĐỔI] Gọi hàm DeleteAsync với 2 tham số
+                await _warehouseService.DeleteAsync(id, userId);
+
                 return Ok(new { message = "Xoá kho hàng thành công." });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (InvalidOperationException ex)
             {

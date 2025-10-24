@@ -11,6 +11,8 @@ namespace EcoWrap.BLL.IServices
         Task<UserResponse?> GetUserByIdAsync(int id);
         Task UpdateUserAsync(User user);
         Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
+
+        Task<User?> GetUserEntityByIdAsync(int id);
         Task DeleteUserAsync(int id);
     }
 }

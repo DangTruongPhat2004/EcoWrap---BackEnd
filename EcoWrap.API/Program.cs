@@ -35,6 +35,8 @@ using EcoWrap.Models.Designs;
 
 using System.Security.Claims;
 using EcoWrap.Models.Config;
+using Hangfire;
+using Hangfire.SqlServer;
 
 namespace EcoWrap.API
 {
@@ -84,6 +86,7 @@ namespace EcoWrap.API
             builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
             builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IRegisterAccountRepository, RegisterAccountRepository>();
             builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
@@ -93,6 +96,7 @@ namespace EcoWrap.API
 
             // ===== Services =====
             builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IAddressService, AddressService>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<ICartItemService, CartItemService>();
@@ -110,6 +114,33 @@ namespace EcoWrap.API
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IWarehouseService, WarehouseService>();
             builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+            //Hangfire SERVICE
+            var connectionString = builder.Configuration.GetConnectionString("EcoWrapDBContext")
+                ?? throw new InvalidOperationException("Connection string 'EcoWrapDBContext' not found.");
+            //Cấu hình Hangfire Services ---
+            builder.Services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170) // Hoặc Version_180 nếu dùng .NET 8
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    DisableGlobalLocks = true // Khuyến nghị cho SQL Server
+                }));
+
+            // Thêm Hangfire Server để xử lý các job
+            builder.Services.AddHangfireServer();
+            builder.Services.AddScoped<IBackgroundJobService, HangfireService>();
+
+            //SHIPPING SERVICE
+            builder.Services.AddHttpClient<IGhtkService, GhtkService>(); // Sử dụng HttpClientFactory
+
+            //Payment SERVICE
+            builder.Services.AddScoped<IPaymentService, PayosService>();
 
             // ===== JWT Auth =====
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -159,7 +190,7 @@ namespace EcoWrap.API
 
             // ===== DbContext =====
             builder.Services.AddDbContext<EcoWrapDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("AIChatbotDB")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("EcoWrapDBContext")));
 
             // ===== Swagger + JWT =====
             builder.Services.AddEndpointsApiExplorer();
@@ -284,7 +315,7 @@ namespace EcoWrap.API
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             // Use the general DevCors policy first
             app.UseCors(DevCors);

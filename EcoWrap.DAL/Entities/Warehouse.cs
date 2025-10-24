@@ -19,8 +19,24 @@ public partial class Warehouse
     [Column("Seller_id")]
     public int SellerId { get; set; }
 
+    [Column("Phone_number")]
+    [StringLength(20)]
+    public string? PhoneNumber { get; set; }
+
     [StringLength(255)]
     public string? Address { get; set; }
+
+    [Column("Province_Id")]
+    [StringLength(255)] 
+    public string? ProvinceId { get; set; }
+
+    [Column("District_Id")]
+    [StringLength(255)] 
+    public string? DistrictId { get; set; }
+
+    [Column("Ward_Id")]
+    [StringLength(255)] 
+    public string? WardId { get; set; }
 
     [InverseProperty("Warehouse")]
     public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();

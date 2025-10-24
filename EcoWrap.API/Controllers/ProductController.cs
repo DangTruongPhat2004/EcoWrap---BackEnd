@@ -147,17 +147,35 @@ namespace EcoWrap.API.Controllers
         {
             try
             {
-                var result = await _productService.DeleteAsync(id);
-                if (result)
-                    return Ok(new { message = "Xóa sản phẩm thành công." });
+                // [MODIFY] Get userId from token
+                var userIdClaim = User.FindFirst("id")?.Value; // Or ClaimTypes.NameIdentifier
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized(new { message = "Không xác định được người dùng." });
 
-                return NotFound(new { message = "Không tìm thấy sản phẩm để xóa." });
+                if (!int.TryParse(userIdClaim, out var userId))
+                    return Unauthorized(new { message = "UserId không hợp lệ." });
+
+                // [MODIFY] Call DeleteAsync with userId
+                var result = await _productService.DeleteAsync(id, userId);
+
+                // No need to check 'result' here if the service throws exceptions on failure
+                return Ok(new { message = "Xóa sản phẩm thành công." });
+
+            }
+            // [ADD] Catch specific exceptions from the service
+            catch (InvalidOperationException ex) // e.g., Product not found
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex) // e.g., Not the owner
+            {
+                return Forbid(ex.Message);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
-                    message = "Hệ thống gặp lỗi, vui lòng thử lại sau!",
+                    message = "Hệ thống gặp lỗi khi xóa sản phẩm!",
                     detail = ex.Message
                 });
             }

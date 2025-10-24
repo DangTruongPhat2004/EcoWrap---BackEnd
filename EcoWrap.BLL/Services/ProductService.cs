@@ -4,7 +4,10 @@ using System.Threading.Tasks;
 using EcoWrap.BLL.IServices;
 using EcoWrap.DAL.Entities;
 using EcoWrap.DAL.IRepositories;
+using EcoWrap.Models.DTO;
 using EcoWrap.Models.Request;
+// Bạn có thể cần thêm namespace của CloudinaryService
+// using EcoWrap.BLL.Services.ThirdParty; 
 
 namespace EcoWrap.BLL.Services
 {
@@ -12,7 +15,7 @@ namespace EcoWrap.BLL.Services
     {
         private readonly IProductRepository _productRepo;
         private readonly ISellerRepository _sellerRepo;
-        private readonly CloudinaryService _cloudinary;
+        private readonly CloudinaryService _cloudinary; // Giả sử CloudinaryService đã được inject
 
         public ProductService(
             IProductRepository productRepo,
@@ -74,7 +77,11 @@ namespace EcoWrap.BLL.Services
                 InkType = request.InkType,
                 PrintProcess = request.PrintProcess,
                 ProductPrice = request.ProductPrice,
-                ProductStatus = "Out stock",
+
+                // [SỬA ĐỔI] Thêm WeightGram
+                WeightGram = request.WeightGram,
+
+                ProductStatus = "Out stock", // Mặc định là hết hàng, cần nhập kho
                 ImageFile = imageUrl,
                 CertificateFile = certUrl,
                 DesignFile = designUrl,
@@ -126,6 +133,9 @@ namespace EcoWrap.BLL.Services
             product.PrintProcess = request.PrintProcess;
             product.CategoryId = request.CategoryId;
 
+            // [SỬA ĐỔI] Thêm WeightGram
+            product.WeightGram = request.WeightGram;
+
             try
             {
                 if (request.ImageFile != null)
@@ -148,14 +158,44 @@ namespace EcoWrap.BLL.Services
         }
 
         // -------------------- [DELETE] --------------------
-        public async Task<bool> DeleteAsync(string id)
+        // [SỬA ĐỔI] Thêm userId để xác thực
+        public async Task<bool> DeleteAsync(string id, int userId)
         {
+            // [SỬA ĐỔI] Thêm logic xác thực
+            var seller = await _sellerRepo.GetByUserIdAsync(userId)
+                ?? throw new InvalidOperationException("Không tìm thấy người bán.");
+
             var product = await _productRepo.GetByIdAsync(id);
-            if (product == null) return false;
+            if (product == null)
+                throw new InvalidOperationException("Không tìm thấy sản phẩm.");
+
+            if (product.SellerId != seller.SellerId)
+                throw new UnauthorizedAccessException("Bạn không có quyền xoá sản phẩm này.");
+
+            // (Thêm logic kiểm tra xem sản phẩm có trong đơn hàng nào chưa)
+            // ...
 
             await _productRepo.DeleteAsync(product);
             await _productRepo.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<ProductDetailDto> GetProductDetailAsync(string productId)
+        {
+            // Sử dụng Repo để lấy Product Entity
+            var product = await _productRepo.GetByIdAsync(productId)
+                ?? throw new InvalidOperationException($"Không tìm thấy sản phẩm có ID: {productId}.");
+
+            if (product.WeightGram == null || product.WeightGram <= 0)
+                throw new InvalidOperationException($"Sản phẩm {product.ProductName} chưa có thông tin trọng lượng (WeightGram) hợp lệ.");
+
+            // Ánh xạ từ Product Entity sang DTO
+            return new ProductDetailDto
+            {
+                ProductName = product.ProductName,
+                // Dùng toán tử Null-coalescing để đảm bảo giá trị (mặc dù đã kiểm tra ở trên)
+                WeightGram = product.WeightGram.Value
+            };
         }
     }
 }

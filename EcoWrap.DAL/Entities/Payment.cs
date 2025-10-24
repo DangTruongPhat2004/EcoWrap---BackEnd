@@ -29,6 +29,14 @@ public partial class Payment
     [Unicode(false)]
     public string? TransactionCode { get; set; }
 
+    [Column("PaymentLinkId")] 
+    [StringLength(100)]
+    [Unicode(false)]
+    public string? PaymentLinkId { get; set; }
+
+    [Column("QrCode")]
+    public string? QrCode { get; set; }
+
     [ForeignKey("OrderId")]
     [InverseProperty("Payments")]
     public virtual Order? Order { get; set; }

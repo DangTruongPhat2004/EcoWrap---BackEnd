@@ -22,7 +22,11 @@ public partial class Order
     public decimal? TotalPrice { get; set; }
 
     [StringLength(255)]
-    public string? Address { get; set; }
+    public string Address { get; set; }
+    public string Province { get; set; }
+    public string District { get; set; }
+    public string Ward { get; set; }
+    public string Hamlet { get; set; }
 
     [Column("Transport_unit")]
     [StringLength(255)]

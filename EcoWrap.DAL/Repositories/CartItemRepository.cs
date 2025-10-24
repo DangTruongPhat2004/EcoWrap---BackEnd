@@ -60,6 +60,15 @@ namespace EcoWrap.DAL.Repositories
             await Task.CompletedTask;
         }
 
+        public async Task<List<CartItem>> GetByOrderIdAsync(int orderId)
+        {
+            return await _context.CartItems
+                .Where(ci => ci.OrderId == orderId)
+                // Có thể bao gồm (Include) thông tin Product nếu cần
+                // .Include(ci => ci.Product) 
+                .ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

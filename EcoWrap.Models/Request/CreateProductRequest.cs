@@ -18,10 +18,16 @@ namespace EcoWrap.Models.Request
         public string? Size { get; set; }
         public string? InkType { get; set; }
         public string? PrintProcess { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "Giá sản phẩm là bắt buộc")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Giá sản phẩm phải lớn hơn 0")]
         public decimal ProductPrice { get; set; }
 
-        // Upload files (lưu URL lên DB)
+        [Required(ErrorMessage = "Cân nặng (gram) là bắt buộc")]
+        [Range(1, int.MaxValue, ErrorMessage = "Cân nặng phải là số dương")]
+        public int WeightGram { get; set; }
+
+        // Upload files
         public IFormFile? ImageFile { get; set; }
         public IFormFile? CertificateFile { get; set; }
         public IFormFile? DesignFile { get; set; }

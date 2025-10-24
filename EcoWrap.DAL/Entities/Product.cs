@@ -52,6 +52,9 @@ namespace EcoWrap.DAL.Entities
         [Column("Product_price", TypeName = "decimal(18,2)")]
         public decimal ProductPrice { get; set; }
 
+        [Column("Weight_Gram")]
+        public int? WeightGram { get; set; }
+
         [Column("Product_status")]
         [StringLength(20)]
         public string? ProductStatus { get; set; } = "Out stock";

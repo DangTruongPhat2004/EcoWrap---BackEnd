@@ -11,5 +11,6 @@ namespace EcoWrap.DAL.IRepositories
     {
         Task AddAsync(Customer customer);
         Task<Customer?> GetByUserIdAsync(int userId);
+        Task<Customer?> GetByIdAsync(int customerId);
     }
 }

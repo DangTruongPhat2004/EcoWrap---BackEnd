@@ -29,5 +29,10 @@ namespace EcoWrap.DAL.Repositories
             return await _context.Customers
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
+        public async Task<Customer?> GetByIdAsync(int customerId)
+        {
+            // Dùng FindAsync vì customerId là khóa chính
+            return await _context.Customers.FindAsync(customerId);
+        }
     }
 }

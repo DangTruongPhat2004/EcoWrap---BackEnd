@@ -5,6 +5,9 @@ namespace EcoWrap.DAL.IRepositories
 {
     public interface IOrderRepository
     {
-        Task<Order> CreateOrderAsync(Order order);
+        Task AddAsync(Order entity);
+        Task UpdateAsync(Order entity);
+        Task<Order?> GetByIdAsync(int id);
+        Task SaveChangesAsync();
     }
 }

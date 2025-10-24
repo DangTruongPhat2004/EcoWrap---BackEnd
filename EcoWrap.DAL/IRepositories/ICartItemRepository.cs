@@ -27,6 +27,8 @@ namespace EcoWrap.DAL.IRepositories
         // Xóa nhiều item cùng lúc (tối ưu khi xoá giỏ hàng)
         Task DeleteRangeAsync(IEnumerable<CartItem> entities);
 
+        Task<List<CartItem>> GetByOrderIdAsync(int orderId);
+
         // Lưu thay đổi
         Task SaveChangesAsync();
     }
