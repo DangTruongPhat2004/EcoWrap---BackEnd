@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using EcoWrap.BLL.IServices;
 using EcoWrap.Models.Request;
@@ -178,6 +179,102 @@ namespace EcoWrap.API.Controllers
                     message = "Hệ thống gặp lỗi khi xóa sản phẩm!",
                     detail = ex.Message
                 });
+            }
+        }
+
+        // -------------------- [ACTIVATE PRODUCT] --------------------
+        [HttpPut("{productId}/activate")]
+        [Authorize(Roles = "Seller")]
+        public async Task<IActionResult> ActivateProduct(string productId)
+        {
+            // --- Validate Input ---
+            if (string.IsNullOrWhiteSpace(productId))
+            {
+                return BadRequest(new { Success = false, Message = "ProductId không được để trống." });
+            }
+
+            try
+            {
+                // --- Get User ID ---
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userIdString))
+                {
+                    return Unauthorized(new { Success = false, Message = "Không thể xác định User ID từ token." });
+                }
+                if (!int.TryParse(userIdString, out var userId))
+                {
+                    return Unauthorized(new { Success = false, Message = "User ID không hợp lệ trong token." });
+                }
+                // --- End Get User ID ---
+
+                await _productService.ActivateProductAsync(productId, userId);
+                return Ok(new { Success = true, Message = "Sản phẩm đã được kích hoạt thành công." });
+
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (ex.Message.Contains("Không tìm thấy sản phẩm") || ex.Message.Contains("Không tìm thấy thông tin người bán"))
+                {
+                    return NotFound(new { Success = false, Message = ex.Message });
+                }
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API ActivateProduct EXCEPTION] ProductId {productId}: {ex.ToString()}");
+                return StatusCode(500, new { Success = false, Message = "Lỗi hệ thống khi kích hoạt sản phẩm." });
+            }
+        }
+
+        // -------------------- [DEACTIVATE PRODUCT] --------------------
+        [HttpPut("{productId}/deactivate")]
+        [Authorize(Roles = "Seller")]
+        public async Task<IActionResult> DeactivateProduct(string productId)
+        {
+            // --- Validate Input ---
+            if (string.IsNullOrWhiteSpace(productId))
+            {
+                return BadRequest(new { Success = false, Message = "ProductId không được để trống." });
+            }
+
+            try
+            {
+                // --- Get User ID ---
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userIdString))
+                {
+                    return Unauthorized(new { Success = false, Message = "Không thể xác định User ID từ token." });
+                }
+                if (!int.TryParse(userIdString, out var userId))
+                {
+                    return Unauthorized(new { Success = false, Message = "User ID không hợp lệ trong token." });
+                }
+                // --- End Get User ID ---
+
+                await _productService.DeactivateProductAsync(productId, userId);
+                return Ok(new { Success = true, Message = "Sản phẩm đã ngừng kích hoạt thành công." });
+
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (ex.Message.Contains("Không tìm thấy sản phẩm") || ex.Message.Contains("Không tìm thấy thông tin người bán"))
+                {
+                    return NotFound(new { Success = false, Message = ex.Message });
+                }
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API DeactivateProduct EXCEPTION] ProductId {productId}: {ex.ToString()}");
+                return StatusCode(500, new { Success = false, Message = "Lỗi hệ thống khi ngừng kích hoạt sản phẩm." });
             }
         }
     }

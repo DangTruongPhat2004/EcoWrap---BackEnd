@@ -11,8 +11,6 @@ namespace EcoWrap.Models.Request
     public class UpdateProductRequest
     {
         [Required]
-        public string ProductId { get; set; } = null!;
-        [Required]
         public int CategoryId { get; set; }
         [Required]
         public string ProductName { get; set; } = null!;

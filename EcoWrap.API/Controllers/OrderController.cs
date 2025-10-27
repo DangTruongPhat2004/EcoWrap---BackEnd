@@ -188,100 +188,203 @@ namespace EcoWrap.API.Controllers
             }
         }
 
-        //// GET api/order/my-orders
-        ///// <summary>
-        ///// Lấy danh sách các đơn hàng của khách hàng đang đăng nhập.
-        ///// </summary>
-        //[HttpGet("my-orders")]
-        //[Authorize(Roles = "Customer")]
-        //public async Task<IActionResult> GetMyOrders()
-        //{
-        //    try
-        //    {
-        //        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //        if (!int.TryParse(userIdString, out var userId))
-        //        {
-        //            return Unauthorized(new ApiResponse<object> { Success = false, Message = "User ID không hợp lệ." });
-        //        }
-
-        //        // *** LƯU Ý: Interface IOrderService cần có hàm GetAllOrderAsync(int userId) ***
-        //        var result = await _orderService.GetAllOrderAsync(userId); // Gọi hàm lấy theo UserId
-
-        //        if (result.Success)
-        //        {
-        //            return Ok(result);
-        //        }
-        //        else
-        //        {
-        //            // Trường hợp này ít xảy ra nếu user hợp lệ, trừ khi có lỗi DB
-        //            return BadRequest(result);
-        //        }
-        //    }
-        //    catch (NotImplementedException) // Bắt lỗi nếu hàm chưa được implement
-        //    {
-        //        return StatusCode(501, new ApiResponse<object> { Success = false, Message = "Chức năng lấy danh sách đơn hàng chưa được hoàn thiện." });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"[API GetMyOrders EXCEPTION]: {ex.ToString()}");
-        //        return StatusCode(500, new ApiResponse<object> { Success = false, Message = "Đã xảy ra lỗi hệ thống khi lấy danh sách đơn hàng." });
-        //    }
-        //}
-
-        // GET api/order/{orderId}
-        [HttpGet("{orderId}")]
-        public async Task<IActionResult> GetOrderById(int orderId)
+        // --- GET ALL ORDERS (ADMIN) ---
+        // GET api/order/admin/all
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllOrdersAdmin()
         {
+            Console.WriteLine("[API] Request received for GetAllOrdersAdmin."); // Add log
             try
             {
-                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (!int.TryParse(userIdString, out var userId))
-                {
-                    return Unauthorized(new ApiResponse<object> { Success = false, Message = "User ID không hợp lệ." });
-                }
-
-                // Gọi service, service sẽ tự kiểm tra quyền dựa trên userId và role (cần implement logic này trong service)
-                var result = await _orderService.GetOrderByIdAsync(orderId, userId);
-
+                // Use GetAllOrdersAdminAsync as implemented in the service
+                var result = await _orderService.GetAllOrdersAdminAsync();
                 if (result.Success)
                 {
-                    // Kiểm tra xem có dữ liệu không (phòng trường hợp service trả về Success=true nhưng Data=null)
-                    if (result.Data == null)
+                    Console.WriteLine($"[API] GetAllOrdersAdmin succeeded, returning {result.Data?.Count ?? 0} orders."); // Add log
+                    return Ok(result);
+                }
+                // Log service error before returning 500
+                Console.WriteLine($"[API] GetAllOrdersAdmin failed in service: {result.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, result);
+            }
+            catch (NotImplementedException) // Catch if service method is not implemented
+            {
+                Console.WriteLine("[API] GetAllOrdersAdmin failed: Service method not implemented."); // Add log
+                return StatusCode(StatusCodes.Status501NotImplemented, new ApiResponse<object> { Success = false, Message = "Chức năng lấy tất cả đơn hàng chưa được hoàn thiện." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetAllOrdersAdmin EXCEPTION]: {ex.ToString()}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống khi lấy tất cả đơn hàng." });
+            }
+        }
+
+        // --- GET ORDERS BY USER ---
+        // GET api/order/my-orders
+        [HttpGet("my-orders")]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> GetMyOrders()
+        {
+            var unauthorizedResult = GetCurrentUserId(out int userId);
+            if (unauthorizedResult != null) return unauthorizedResult;
+
+            Console.WriteLine($"[API] Request received for GetMyOrders for User {userId}."); // Add log
+            try
+            {
+                var result = await _orderService.GetAllOrdersByUserAsync(userId);
+                if (result.Success)
+                {
+                    Console.WriteLine($"[API] GetMyOrders succeeded for User {userId}, returning {result.Data?.Count ?? 0} orders."); // Add log
+                    return Ok(result);
+                }
+                Console.WriteLine($"[API] GetMyOrders failed in service for User {userId}: {result.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, result);
+            }
+            catch (NotImplementedException)
+            {
+                Console.WriteLine($"[API] GetMyOrders failed for User {userId}: Service method not implemented."); // Add log
+                return StatusCode(StatusCodes.Status501NotImplemented, new ApiResponse<object> { Success = false, Message = "Chức năng lấy danh sách đơn hàng chưa được hoàn thiện." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetMyOrders EXCEPTION] UserId {userId}: {ex.ToString()}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống khi lấy danh sách đơn hàng." });
+            }
+        }
+
+        // --- GET ORDER BY ID (CUSTOMER / ADMIN / SELLER VIEW) ---
+        // GET api/order/{orderId}
+        [HttpGet("{orderId}")]
+        [Authorize(Roles = "Customer,Admin,Seller")] // Authorization handled by service logic
+        public async Task<IActionResult> GetOrderById(int orderId)
+        {
+            var unauthorizedResult = GetCurrentUserId(out int userId);
+            if (unauthorizedResult != null) return unauthorizedResult;
+
+            Console.WriteLine($"[API] Request received for GetOrderById {orderId} by User {userId}."); // Add log
+            try
+            {
+                var result = await _orderService.GetOrderByIdAsync(orderId, userId);
+                if (result.Success)
+                {
+                    if (result.Data == null) // Service might return success false + msg for not found/forbidden
                     {
-                        return NotFound(new ApiResponse<object> { Success = false, Message = $"Không tìm thấy đơn hàng ID: {orderId} hoặc bạn không có quyền xem." });
+                        Console.WriteLine($"[API] GetOrderById {orderId} by User {userId}: Not Found or Forbidden by service."); // Add log
+                        return NotFound(new ApiResponse<object> { Success = false, Message = result.Message ?? $"Không tìm thấy đơn hàng ID: {orderId} hoặc không có quyền xem." });
                     }
+                    Console.WriteLine($"[API] GetOrderById {orderId} by User {userId} succeeded."); // Add log
                     return Ok(result);
                 }
                 else
                 {
-                    // Service có thể trả về Success=false kèm message không có quyền
-                    if (result.Message.Contains("không có quyền xem"))
+                    // Handle specific errors returned by service
+                    if (result.Message.Contains("không có quyền"))
                     {
-                        return Forbid(); // Hoặc NotFound tùy cách bạn muốn ẩn thông tin
+                        Console.WriteLine($"[API] GetOrderById {orderId} by User {userId}: Forbidden by service."); // Add log
+                        return Forbid(); // 403
                     }
-                    // Mặc định là NotFound nếu không tìm thấy
-                    return NotFound(result);
+                    Console.WriteLine($"[API] GetOrderById {orderId} by User {userId}: Not Found by service."); // Add log
+                    return NotFound(result); // Default to NotFound if service fails
                 }
             }
-            catch (NotImplementedException) // Bắt lỗi nếu hàm chưa được implement
+            catch (NotImplementedException)
             {
-                return StatusCode(501, new ApiResponse<object> { Success = false, Message = "Chức năng lấy chi tiết đơn hàng chưa được hoàn thiện." });
+                Console.WriteLine($"[API] GetOrderById {orderId} by User {userId}: Service method not implemented."); // Add log
+                return StatusCode(StatusCodes.Status501NotImplemented, new ApiResponse<object> { Success = false, Message = "Chức năng lấy chi tiết đơn hàng chưa được hoàn thiện." });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[API GetOrderById EXCEPTION] OrderId {orderId}: {ex.ToString()}");
-                return StatusCode(500, new ApiResponse<object> { Success = false, Message = "Đã xảy ra lỗi hệ thống khi lấy chi tiết đơn hàng." });
+                Console.WriteLine($"[API GetOrderById EXCEPTION] OrderId {orderId}, UserId {userId}: {ex.ToString()}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống khi lấy chi tiết đơn hàng." });
             }
         }
 
-        // --- CÁC ENDPOINT KHÁC CÓ THỂ CẦN CHO ADMIN/SELLER ---
-        // Ví dụ:
-        // [HttpGet]
-        // [Authorize(Roles = "Admin,Seller")]
-        // public async Task<IActionResult> GetAllOrdersForAdmin([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        // {
-        //     // Gọi một hàm khác trong IOrderService, ví dụ: GetAllOrdersFilteredAsync(status, page, pageSize)
-        //     // Service này sẽ không cần userId mà lấy tất cả hoặc lọc theo SellerId (nếu role là Seller)
-        // }
+        // --- GET ORDER BY ID (ADMIN DETAIL VIEW W/ SELLER INFO) ---
+        // GET api/order/admin/{orderId}
+        [HttpGet("detail/{orderId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetOrderByIdAdmin(int orderId)
+        {
+            Console.WriteLine($"[API] Request received for GetOrderByIdAdmin {orderId}."); // Add log
+            try
+            {
+                var result = await _orderService.GetOrderByIdForAdminAsync(orderId);
+                if (result.Success)
+                {
+                    if (result.Data == null) // Should not happen if order exists, but good check
+                    {
+                        Console.WriteLine($"[API] GetOrderByIdAdmin {orderId}: Not Found by service."); // Add log
+                        return NotFound(new ApiResponse<object> { Success = false, Message = $"Không tìm thấy đơn hàng ID: {orderId}" });
+                    }
+                    Console.WriteLine($"[API] GetOrderByIdAdmin {orderId} succeeded."); // Add log
+                    return Ok(result);
+                }
+                Console.WriteLine($"[API] GetOrderByIdAdmin {orderId} failed in service: {result.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, result); // Treat service failure as 500
+            }
+            catch (NotImplementedException)
+            {
+                Console.WriteLine($"[API] GetOrderByIdAdmin {orderId}: Service method not implemented."); // Add log
+                return StatusCode(StatusCodes.Status501NotImplemented, new ApiResponse<object> { Success = false, Message = "Chức năng lấy chi tiết đơn hàng Admin chưa được hoàn thiện." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetOrderByIdAdmin EXCEPTION] OrderId {orderId}: {ex.ToString()}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống khi lấy chi tiết đơn hàng cho Admin." });
+            }
+        }
+
+        // --- GET ORDERS BY STATUS (ADMIN) ---
+        // GET api/order/admin/status/{status}
+        /// <summary>
+        /// (Admin) Lấy danh sách đơn hàng theo trạng thái.
+        /// </summary>
+        [HttpGet("detail/status/{status}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetOrdersByStatusAdmin(string status)
+        {
+            Console.WriteLine($"[API] Request received for GetOrdersByStatusAdmin with status '{status}'."); // Add log
+            try
+            {
+                var result = await _orderService.GetOrdersByStatusAdminAsync(status);
+                if (result.Success)
+                {
+                    Console.WriteLine($"[API] GetOrdersByStatusAdmin '{status}' succeeded, returning {result.Data?.Count ?? 0} orders."); // Add log
+                    return Ok(result);
+                }
+                // Handle invalid status error specifically
+                if (result.Message.Contains("không hợp lệ"))
+                {
+                    Console.WriteLine($"[API] GetOrdersByStatusAdmin failed: Invalid status '{status}'."); // Add log
+                    return BadRequest(result);
+                }
+                // Other service errors
+                Console.WriteLine($"[API] GetOrdersByStatusAdmin '{status}' failed in service: {result.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, result);
+            }
+            catch (NotImplementedException)
+            {
+                Console.WriteLine($"[API] GetOrdersByStatusAdmin '{status}': Service method not implemented."); // Add log
+                return StatusCode(StatusCodes.Status501NotImplemented, new ApiResponse<object> { Success = false, Message = "Chức năng lấy đơn hàng theo trạng thái chưa được hoàn thiện." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetOrdersByStatusAdmin EXCEPTION] Status {status}: {ex.ToString()}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống khi lấy đơn hàng theo trạng thái." });
+            }
+        }
+
+        // --- HELPER: Get User ID from Token ---
+        private IActionResult GetCurrentUserId(out int userId)
+        {
+            userId = 0;
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out userId))
+            {
+                return Unauthorized(new ApiResponse<object> { Success = false, Message = "User ID không hợp lệ trong token." });
+            }
+            return null; // Success
+        }
     }
 }

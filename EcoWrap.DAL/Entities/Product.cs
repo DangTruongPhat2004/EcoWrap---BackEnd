@@ -71,6 +71,9 @@ namespace EcoWrap.DAL.Entities
         [Column("Created_date", TypeName = "datetime")]
         public DateTime? CreatedDate { get; set; } = DateTime.Now;
 
+        [Column("IsActive")]
+        public bool IsActive { get; set; }
+
         [ForeignKey("SellerId")]
         [InverseProperty("Products")]
         public virtual Seller Seller { get; set; } = null!;

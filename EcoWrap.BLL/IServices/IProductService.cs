@@ -15,5 +15,7 @@ namespace EcoWrap.BLL.IServices
         Task<IEnumerable<Product>> GetProductsBySellerAsync(int userId);
         Task<bool> UpdateProductAsync(string productId, int userId, UpdateProductRequest request);
         Task<ProductDetailDto> GetProductDetailAsync(string productId);
+        Task<bool> ActivateProductAsync(string productId, int userId);
+        Task<bool> DeactivateProductAsync(string productId, int userId);
     }
 }

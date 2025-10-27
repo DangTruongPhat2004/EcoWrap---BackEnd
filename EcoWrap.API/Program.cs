@@ -142,6 +142,8 @@ namespace EcoWrap.API
             //Payment SERVICE
             builder.Services.AddScoped<IPaymentService, PayosService>();
 
+            builder.Services.AddHttpContextAccessor();
+
             // ===== JWT Auth =====
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>

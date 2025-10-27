@@ -13,5 +13,6 @@ namespace EcoWrap.DAL.IRepositories
         Task<bool> UpdatePaymentStatusAsync(string paymentLinkId, string newStatus, string? transactionCode);
         Task<Payment?> GetPaymentByLinkIdAsync(string paymentLinkId);
         Task SaveChangesAsync();
+        Task<Payment?> GetPaymentByOrderIdAsync(int orderId);
     }
 }

@@ -7,10 +7,15 @@
         public int TotalAmount { get; set; }
         public decimal TotalPrice { get; set; }
         public string Address { get; set; }
+        public string Province { get; set; }
+        public string District { get; set; }
+        public string Ward { get; set; }
+        public string Hamlet { get; set; }
         public string TransportUnit { get; set; }
         public string ShippingCode { get; set; }
         public string OrderStatus { get; set; }
         public DateTime CreatedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
     }
 
     public class OrderDetailResponse

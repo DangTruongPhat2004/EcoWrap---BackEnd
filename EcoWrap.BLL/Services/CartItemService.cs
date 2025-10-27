@@ -42,6 +42,8 @@ namespace EcoWrap.BLL.Services
             if (cart.CustomerId != userId)
                 throw new InvalidOperationException("Bạn không có quyền thao tác trên giỏ hàng này.");
 
+            if (cart.IsActive != true)
+                throw new InvalidOperationException("Giỏ hàng này đã được sử dụng hoặc đã bị khóa, vui lòng xóa và tạo giỏ hàng mới!");
             return cart;
         }
 
@@ -75,6 +77,11 @@ namespace EcoWrap.BLL.Services
             //Lấy sản phẩm và SellerId
             var product = await _productRepo.GetByIdAsync(request.ProductId)
                 ?? throw new InvalidOperationException("Không tìm thấy sản phẩm trong hệ thống.");
+
+            if (!product.IsActive)
+            {
+                throw new InvalidOperationException($"Sản phẩm '{product.ProductName}' hiện không được bán, không thể bỏ vô Cart!");
+            }
 
             int sellerId = product.SellerId; //tự động gán seller id
 
@@ -164,6 +171,11 @@ namespace EcoWrap.BLL.Services
 
             var product = cartItem.Product ?? await _productRepo.GetByIdAsync(cartItem.ProductId)
                 ?? throw new InvalidOperationException("Không tìm thấy thông tin sản phẩm.");
+
+            if (!product.IsActive)
+            {
+                throw new InvalidOperationException($"Sản phẩm '{product.ProductName}' hiện không còn được bán, không thể cập nhật số lượng.");
+            }
 
             // Kiểm tra tồn kho
             var inventories = await _inventoryRepo.GetAllAsync();

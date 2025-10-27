@@ -9,5 +9,10 @@ namespace EcoWrap.DAL.IRepositories
         Task UpdateAsync(Order entity);
         Task<Order?> GetByIdAsync(int id);
         Task SaveChangesAsync();
+        Task<IEnumerable<Order>> GetAllAdminAsync();
+        Task<IEnumerable<Order>> GetAllByCustomerIdAsync(int customerId);
+        Task<Order?> GetByIdWithDetailsAsync(int orderId);
+        Task<Order?> GetByIdWithDetailsForAdminAsync(int orderId);
+        Task<IEnumerable<Order>> GetAllByStatusAdminAsync(string status);
     }
 }

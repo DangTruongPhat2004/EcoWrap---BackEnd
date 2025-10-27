@@ -66,6 +66,8 @@ namespace EcoWrap.BLL.Services
                 ?? throw new InvalidOperationException("Không tìm thấy thông tin khách hàng.");
 
             var carts = await _cartRepo.GetByCustomerIdAsync(customer.CustomerId);
+            carts = carts.Where(c => c.IsActive == true).ToList();
+
             if (carts == null || !carts.Any())
                 throw new InvalidOperationException("Bạn chưa có giỏ hàng nào.");
 
@@ -156,7 +158,7 @@ namespace EcoWrap.BLL.Services
             foreach (var item in cartItems)
                 await _cartItemRepo.DeleteAsync(item);
 
-            await _cartItemRepo.SaveChangesAsync();
+            //await _cartItemRepo.SaveChangesAsync();
 
             await _cartRepo.DeleteAsync(cart);
             await _cartRepo.SaveChangesAsync();

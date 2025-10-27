@@ -12,6 +12,7 @@ using Net.payOS;
 using Net.payOS.Types;
 using EcoWrap.DAL.IRepositories;
 using System.Transactions;
+using Microsoft.EntityFrameworkCore;
 // Thêm using cho ICartRepository nếu bạn muốn khóa Cart ở đây
 // using EcoWrap.DAL.IRepositories;
 
@@ -19,6 +20,7 @@ namespace EcoWrap.BLL.Services
 {
     public class PayosService : IPaymentService
     {
+        private readonly EcoWrapDbContext _context;
         private readonly PayOS _payOS;
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
@@ -26,13 +28,11 @@ namespace EcoWrap.BLL.Services
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IEmailService _emailService;
         private readonly IBackgroundJobService _backgroundJobService;
-        // private readonly IGhtkService _ghtkService; // Xóa dependency này
         private readonly ICustomerRepository _customerRepository;
         private readonly IUserRepository _userRepository;
-        // Thêm ICartRepository nếu cần khóa Cart ở đây
-        // private readonly ICartRepository _cartRepository;
 
         public PayosService(
+            EcoWrapDbContext context,
             IConfiguration configuration,
             IPaymentRepository paymentRepository,
             IOrderRepository orderRepository,
@@ -40,12 +40,12 @@ namespace EcoWrap.BLL.Services
             IInventoryRepository inventoryRepository,
             IEmailService emailService,
             IBackgroundJobService backgroundJobService,
-            // IGhtkService ghtkService, // Xóa
             ICustomerRepository customerRepository,
             IUserRepository userRepository
-            // ICartRepository cartRepository // Thêm nếu cần
             )
         {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+
             string clientId = configuration["PayOS:ClientId"] ?? throw new InvalidOperationException("Missing PayOS:ClientId configuration.");
             string apiKey = configuration["PayOS:ApiKey"] ?? throw new InvalidOperationException("Missing PayOS:ApiKey configuration.");
             string checksumKey = configuration["PayOS:ChecksumKey"] ?? throw new InvalidOperationException("Missing PayOS:ChecksumKey configuration.");
@@ -57,10 +57,8 @@ namespace EcoWrap.BLL.Services
             _inventoryRepository = inventoryRepository;
             _emailService = emailService;
             _backgroundJobService = backgroundJobService;
-            // _ghtkService = ghtkService; // Xóa
             _customerRepository = customerRepository;
             _userRepository = userRepository;
-            // _cartRepository = cartRepository; // Gán nếu cần
         }
 
         // --- Tạo Link Thanh toán ---
@@ -71,13 +69,37 @@ namespace EcoWrap.BLL.Services
             Console.WriteLine($"[PayOS SDK] Creating payment link for OrderId: {orderId}, Amount: {amount}");
             try
             {
+                // --- Kiểm tra Payment cũ ---
+                var oldPayment = await _paymentRepository.GetPaymentByOrderIdAsync(orderId);
+                if (oldPayment != null)
+                {
+                    if (oldPayment.PaymentStatus == "Pending" || oldPayment.PaymentStatus == "Failed")
+                    {
+                        Console.WriteLine($"[PayOS SDK] Deleting old payment (Status={oldPayment.PaymentStatus}) for Order {orderId}");
+                        _context.Payments.Remove(oldPayment);
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        return new CreatePaymentResponse
+                        {
+                            Success = false,
+                            ErrorMessage = "Đơn hàng đã được thanh toán thành công, không thể tạo lại link."
+                        };
+                    }
+                }
+
                 // Mặc định items nếu null hoặc rỗng
                 if (items == null || !items.Any())
                 {
                     items = new List<ItemData> { new ItemData($"Đơn hàng EcoWrap #{orderId}", 1, (int)amount) };
                 }
 
-                long orderCodeLong = orderId; // PayOS yêu cầu orderCode là long
+                // --- Sinh orderCodeLong tự động ---
+                if (amount > int.MaxValue)
+                    throw new InvalidOperationException("Amount vượt quá giới hạn PayOS int max.");
+
+                long orderCodeLong = long.Parse($"{orderId}{DateTime.UtcNow:MMddHHmmss}");
 
                 var paymentData = new PaymentData(
                     orderCode: orderCodeLong,

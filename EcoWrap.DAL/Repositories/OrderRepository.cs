@@ -33,5 +33,50 @@ namespace EcoWrap.DAL.Repositories
         {
             await _context.SaveChangesAsync();
         }
+        public async Task<IEnumerable<Order>> GetAllAdminAsync()
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                    .ThenInclude(c => c!.User)
+                .OrderByDescending(o => o.CreatedDate)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Order>> GetAllByCustomerIdAsync(int customerId)
+        {
+            return await _context.Orders
+                .Where(o => o.CustomerId == customerId)
+                .OrderByDescending(o => o.CreatedDate)
+                .ToListAsync();
+        }
+        public async Task<Order?> GetByIdWithDetailsAsync(int orderId)
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                    .ThenInclude(c => c!.User)
+                .Include(o => o.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+        }
+        public async Task<Order?> GetByIdWithDetailsForAdminAsync(int orderId)
+        {
+            return await _context.Orders
+               .Include(o => o.Customer)
+                   .ThenInclude(c => c!.User) 
+               .Include(o => o.CartItems) 
+                   .ThenInclude(ci => ci.Product) 
+                       .ThenInclude(p => p!.Seller) 
+                           .ThenInclude(s => s!.User)
+               .FirstOrDefaultAsync(o => o.OrderId == orderId); 
+        }
+        public async Task<IEnumerable<Order>> GetAllByStatusAdminAsync(string status)
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                    .ThenInclude(c => c!.User) 
+                .Where(o => EF.Functions.Like(o.OrderStatus, status))
+                                                                    
+                .OrderByDescending(o => o.CreatedDate) 
+                .ToListAsync();
+        }
     }
 }

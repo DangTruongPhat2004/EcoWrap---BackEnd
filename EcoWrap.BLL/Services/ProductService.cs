@@ -132,8 +132,6 @@ namespace EcoWrap.BLL.Services
             product.InkType = request.InkType;
             product.PrintProcess = request.PrintProcess;
             product.CategoryId = request.CategoryId;
-
-            // [SỬA ĐỔI] Thêm WeightGram
             product.WeightGram = request.WeightGram;
 
             try
@@ -196,6 +194,69 @@ namespace EcoWrap.BLL.Services
                 // Dùng toán tử Null-coalescing để đảm bảo giá trị (mặc dù đã kiểm tra ở trên)
                 WeightGram = product.WeightGram.Value
             };
+        }
+
+        // -------------------- [ACTIVATE PRODUCT] --------------------
+        public async Task<bool> ActivateProductAsync(string productId, int userId)
+        {
+            Console.WriteLine($"[ProductService] Attempting to activate ProductId: {productId} by UserId: {userId}");
+            // 1. Xác thực Seller
+            var seller = await _sellerRepo.GetByUserIdAsync(userId)
+                ?? throw new InvalidOperationException("Không tìm thấy thông tin người bán.");
+
+            // 2. Lấy Product
+            var product = await _productRepo.GetByIdAsync(productId)
+                ?? throw new InvalidOperationException($"Không tìm thấy sản phẩm ID: {productId}.");
+
+            // 3. Kiểm tra quyền sở hữu
+            if (product.SellerId != seller.SellerId)
+                throw new UnauthorizedAccessException("Bạn không có quyền thay đổi trạng thái sản phẩm này.");
+
+            // 4. Kiểm tra trạng thái hiện tại (nếu đã active thì không cần làm gì)
+            if (product.IsActive)
+            {
+                Console.WriteLine($"[ProductService] Product {productId} is already active.");
+                return true; // Hoặc trả về false với message "Sản phẩm đã được kích hoạt"
+            }
+
+            // 5. Cập nhật IsActive = true
+            product.IsActive = true;
+            // Không cần gọi UpdateAsync nếu repo dùng DbContext tracking
+            // await _productRepo.UpdateAsync(product);
+            await _productRepo.SaveChangesAsync();
+            Console.WriteLine($"[ProductService] Product {productId} activated successfully.");
+            return true;
+        }
+
+        // -------------------- [DEACTIVATE PRODUCT] --------------------
+        public async Task<bool> DeactivateProductAsync(string productId, int userId)
+        {
+            Console.WriteLine($"[ProductService] Attempting to deactivate ProductId: {productId} by UserId: {userId}");
+            // 1. Xác thực Seller
+            var seller = await _sellerRepo.GetByUserIdAsync(userId)
+                ?? throw new InvalidOperationException("Không tìm thấy thông tin người bán.");
+
+            // 2. Lấy Product
+            var product = await _productRepo.GetByIdAsync(productId)
+                ?? throw new InvalidOperationException($"Không tìm thấy sản phẩm ID: {productId}.");
+
+            // 3. Kiểm tra quyền sở hữu
+            if (product.SellerId != seller.SellerId)
+                throw new UnauthorizedAccessException("Bạn không có quyền thay đổi trạng thái sản phẩm này.");
+
+            // 4. Kiểm tra trạng thái hiện tại (nếu đã inactive thì không cần làm gì)
+            if (!product.IsActive)
+            {
+                Console.WriteLine($"[ProductService] Product {productId} is already inactive.");
+                return true; // Hoặc trả về false với message "Sản phẩm đã ngừng kích hoạt"
+            }
+
+            // 5. Cập nhật IsActive = false
+            product.IsActive = false;
+            // await _productRepo.UpdateAsync(product);
+            await _productRepo.SaveChangesAsync();
+            Console.WriteLine($"[ProductService] Product {productId} deactivated successfully.");
+            return true;
         }
     }
 }

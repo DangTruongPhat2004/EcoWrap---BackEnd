@@ -14,7 +14,10 @@ namespace EcoWrap.BLL.IServices
         Task<ApiResponse<bool>> ConfirmDeliveryAsync(int orderId, int userId);
         Task AutoCancelOrderAsync(int orderId);
         Task<ApiResponse<bool>> DeclineOrderAsync(int orderId);
-        //Task<ApiResponse<List<OrderResponse>>> GetAllOrderAsync(int userId);
         Task<ApiResponse<OrderDetailResponse>> GetOrderByIdAsync(int orderId, int userId);
+        Task<ApiResponse<List<OrderResponse>>> GetAllOrdersAdminAsync();
+        Task<ApiResponse<List<OrderResponse>>> GetAllOrdersByUserAsync(int userId);
+        Task<ApiResponse<AdminOrderDetailResponse>> GetOrderByIdForAdminAsync(int orderId);
+        Task<ApiResponse<List<AdminOrderDetailResponse>>> GetOrdersByStatusAdminAsync(string status);
     }
 }

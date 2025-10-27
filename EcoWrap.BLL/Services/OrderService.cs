@@ -5,9 +5,12 @@ using EcoWrap.DAL.IRepositories;
 using EcoWrap.Models.Request; // Giả sử bạn có CreateOrderRequest ở đây
 using EcoWrap.Models.Response; // Giả sử bạn có OrderResponse ở đây
 using EcoWrap.Models.Responses; // Giả sử bạn có ApiResponse ở đây
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -15,6 +18,7 @@ namespace EcoWrap.BLL.Services
 {
     public class OrderService : IOrderService
     {
+        private readonly EcoWrapDbContext _dbContext;
         private readonly IOrderRepository _orderRepo;
         private readonly ICartRepository _cartRepo;
         private readonly ICartItemRepository _cartItemRepo;
@@ -24,8 +28,10 @@ namespace EcoWrap.BLL.Services
         private readonly IInventoryRepository _inventoryRepo;
         private readonly IEmailService _emailService;
         private readonly IBackgroundJobService _backgroundJobService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public OrderService(
+            EcoWrapDbContext dbContext,
             IOrderRepository orderRepo,
             ICartRepository cartRepo,
             ICartItemRepository cartItemRepo,
@@ -34,9 +40,11 @@ namespace EcoWrap.BLL.Services
             IGhtkService ghtkService,
             IInventoryRepository inventoryRepo,
             IEmailService emailService,
-            IBackgroundJobService backgroundJobService // Bỏ IPaymentService
+            IBackgroundJobService backgroundJobService,
+            IHttpContextAccessor httpContextAccessor
             )
         {
+            _dbContext = dbContext;
             _orderRepo = orderRepo;
             _cartRepo = cartRepo;
             _cartItemRepo = cartItemRepo;
@@ -46,6 +54,7 @@ namespace EcoWrap.BLL.Services
             _inventoryRepo = inventoryRepo;
             _emailService = emailService;
             _backgroundJobService = backgroundJobService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // --- Bước 1: Tạo Order (Trạng thái Pending) ---
@@ -592,33 +601,340 @@ namespace EcoWrap.BLL.Services
             return new ApiResponse<bool> { Success = true, Message = "Đơn hàng đã được từ chối/hủy thành công." };
         }
 
+        // --- GET ALL ORDERS (ADMIN) ---
+        public async Task<ApiResponse<List<OrderResponse>>> GetAllOrdersAdminAsync() // <= Implement Yêu cầu 1
+        {
+            Console.WriteLine("[OrderService] Getting all orders for Admin...");
+            try
+            {
+                // Gọi Repo để lấy tất cả Orders, nên Include Customer.User và sắp xếp
+                var orders = await _orderRepo.GetAllAdminAsync(); // Cần Repo có hàm này
 
-        // --- Hàm Helper ---
+                var orderResponses = orders
+                    .Select(order => MapOrderToOrderResponse(order)) // Dùng helper map cơ bản
+                    .ToList();
+
+                Console.WriteLine($"[OrderService] Retrieved {orderResponses.Count} orders.");
+                return new ApiResponse<List<OrderResponse>>
+                {
+                    Success = true,
+                    Data = orderResponses,
+                    Message = $"Lấy thành công {orderResponses.Count} đơn hàng."
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetAllOrdersAdminAsync EXCEPTION]: {ex.ToString()}");
+                return new ApiResponse<List<OrderResponse>> { Success = false, Message = "Lỗi hệ thống khi lấy tất cả đơn hàng." };
+            }
+        }
+
+        // --- GET ORDERS BY USER --- (Hàm cần thiết cho Customer)
+        public async Task<ApiResponse<List<OrderResponse>>> GetAllOrdersByUserAsync(int userId)
+        {
+            try
+            {
+                var customer = await _customerRepo.GetByUserIdAsync(userId);
+                if (customer == null)
+                {
+                    return new ApiResponse<List<OrderResponse>> { Success = true, Data = new List<OrderResponse>(), Message = "Không tìm thấy thông tin khách hàng." };
+                }
+                var orders = await _orderRepo.GetAllByCustomerIdAsync(customer.CustomerId); // Cần Repo có hàm này
+                var orderResponses = orders.Select(MapOrderToOrderResponse).ToList();
+                return new ApiResponse<List<OrderResponse>> { Success = true, Data = orderResponses, Message = $"Tìm thấy {orderResponses.Count} đơn hàng." };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetAllOrdersByUserAsync EXCEPTION] UserId {userId}: {ex.ToString()}");
+                return new ApiResponse<List<OrderResponse>> { Success = false, Message = "Lỗi hệ thống khi lấy danh sách đơn hàng." };
+            }
+        }
+
+        // --- GET ORDER BY ID (CUSTOMER / BASIC VIEW) ---
+        public async Task<ApiResponse<OrderDetailResponse>> GetOrderByIdAsync(int orderId, int userId) // <= Implement Yêu cầu 2 (view thường)
+        {
+            Console.WriteLine($"[OrderService] Getting Order {orderId} details for User {userId}...");
+            try
+            {
+                // Lấy Order kèm Customer.User, Items.Product
+                var order = await _orderRepo.GetByIdWithDetailsAsync(orderId); // Cần Repo có hàm này
+                if (order == null)
+                {
+                    return new ApiResponse<OrderDetailResponse> { Success = false, Message = $"Không tìm thấy đơn hàng ID: {orderId}" };
+                }
+
+                // Kiểm tra quyền
+                string userRole = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Role) ?? "";
+                bool isOwner = order.Customer?.UserId == userId;
+                bool isAdmin = userRole == "Admin";
+                // bool isSellerAllowed = ... // Logic kiểm tra Seller nếu cần
+
+                if (!isOwner && !isAdmin /* && !isSellerAllowed */)
+                {
+                    Console.WriteLine($"[AUTH REJECT] GetOrderByIdAsync: User {userId} (Role: {userRole}) accessing Order {orderId} owned by User {order.Customer?.UserId}.");
+                    return new ApiResponse<OrderDetailResponse> { Success = false, Message = "Bạn không có quyền xem đơn hàng này." };
+                }
+
+                var user = order.Customer?.User ?? await _userRepo.GetByIdAsync(order.Customer?.UserId ?? 0);
+
+                // Map sang DTO chi tiết thông thường
+                var response = new OrderDetailResponse
+                {
+                    OrderId = order.OrderId,
+                    OrderStatus = order.OrderStatus,
+                    CreatedDate = order.CreatedDate.GetValueOrDefault(),
+                    UpdatedDate = order.UpdatedDate,
+                    TotalPrice = order.TotalPrice.GetValueOrDefault(),
+                    TotalAmount = order.TotalAmount.GetValueOrDefault(),
+                    CustomerId = order.CustomerId,
+                    CustomerName = user?.FullName,
+                    CustomerEmail = user?.Email,
+                    CustomerPhone = user?.PhoneNumber,
+                    ShippingAddress = order.Address,
+                    ShippingWard = order.Ward,
+                    ShippingDistrict = order.District,
+                    ShippingProvince = order.Province,
+                    ShippingHamlet = order.Hamlet,
+                    TransportUnit = order.TransportUnit,
+                    ShippingCode = order.ShippingCode,
+                    Items = order.CartItems?.Select(item => new OrderItemDetailResponse
+                    {
+                        CartItemId = item.CartItemId,
+                        ProductId = item.ProductId,
+                        ProductName = item.Product?.ProductName,
+                        Quantity = item.Quantity,
+                        PricePerItem = (item.Quantity > 0) ? (item.CartItemPrice / item.Quantity) : 0, // Tính giá đơn vị
+                        //TotalItemPrice = item.CartItemPrice, // Dùng TotalItemPrice tính sẵn của DTO
+                        DesignFile = item.DesignFile
+                    }).ToList() ?? new List<OrderItemDetailResponse>()
+                };
+
+                return new ApiResponse<OrderDetailResponse> { Success = true, Data = response };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetOrderByIdAsync EXCEPTION] OrderId {orderId}, UserId {userId}: {ex.ToString()}");
+                return new ApiResponse<OrderDetailResponse> { Success = false, Message = "Lỗi hệ thống khi lấy chi tiết đơn hàng." };
+            }
+        }
+
+        // --- GET ORDER BY ID (FOR ADMIN WITH SELLER INFO) ---
+        public async Task<ApiResponse<AdminOrderDetailResponse>> GetOrderByIdForAdminAsync(int orderId)
+        {
+            Console.WriteLine($"[OrderService] Getting Order {orderId} details for Admin...");
+            try
+            {
+                // Lấy Order kèm Customer/User, CartItems -> Product -> Seller -> User
+                var order = await _dbContext.Orders
+                    .Where(o => o.OrderId == orderId)
+                    .Include(o => o.Customer)
+                        .ThenInclude(c => c.User)
+                    .Include(o => o.CartItems)
+                        .ThenInclude(ci => ci.Product)
+                            .ThenInclude(p => p.Seller)
+                                .ThenInclude(s => s.User)
+                    .FirstOrDefaultAsync();
+
+                if (order == null)
+                {
+                    return new ApiResponse<AdminOrderDetailResponse>
+                    {
+                        Success = false,
+                        Message = $"Không tìm thấy đơn hàng ID: {orderId}"
+                    };
+                }
+
+                // Map sang DTO chi tiết cho Admin
+                var response = MapOrderToAdminDetail(order);
+                if (response == null)
+                {
+                    throw new InvalidOperationException($"Lỗi khi ánh xạ dữ liệu chi tiết cho đơn hàng {orderId}.");
+                }
+
+                return new ApiResponse<AdminOrderDetailResponse>
+                {
+                    Success = true,
+                    Data = response
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetOrderByIdForAdminAsync EXCEPTION] OrderId {orderId}: {ex}");
+                return new ApiResponse<AdminOrderDetailResponse>
+                {
+                    Success = false,
+                    Message = "Lỗi hệ thống khi lấy chi tiết đơn hàng cho Admin."
+                };
+            }
+        }
+
+        // --- GET ORDERS BY STATUS (ADMIN) ---
+        public async Task<ApiResponse<List<AdminOrderDetailResponse>>> GetOrdersByStatusAdminAsync(string status)
+        {
+            Console.WriteLine($"[OrderService] Getting orders with status '{status}' for Admin...");
+
+            // Validate status
+            var allowedStatuses = new[] { "Pending", "Packaging", "Shipping", "Completed", "Canceled", "Declined" };
+            if (string.IsNullOrWhiteSpace(status) || !allowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+            {
+                return new ApiResponse<List<AdminOrderDetailResponse>>
+                {
+                    Success = false,
+                    Message = $"Trạng thái '{status}' không hợp lệ."
+                };
+            }
+
+            try
+            {
+                // Lấy orders từ DB, include đầy đủ Customer/User và CartItems -> Product -> Seller -> User
+                var orders = await _dbContext.Orders
+                    .Where(o => o.OrderStatus == status)
+                    .Include(o => o.Customer)
+                        .ThenInclude(c => c.User)
+                    .Include(o => o.CartItems)
+                        .ThenInclude(ci => ci.Product)
+                            .ThenInclude(p => p.Seller)
+                                .ThenInclude(s => s.User)
+                    .OrderByDescending(o => o.CreatedDate)
+                    .ToListAsync();
+
+                var orderResponses = orders
+                    .Select(order => MapOrderToAdminDetail(order))
+                    .ToList();
+
+                Console.WriteLine($"[OrderService] Retrieved {orderResponses.Count} orders with status '{status}'.");
+
+                return new ApiResponse<List<AdminOrderDetailResponse>>
+                {
+                    Success = true,
+                    Data = orderResponses,
+                    Message = $"Lấy thành công {orderResponses.Count} đơn hàng có trạng thái '{status}'."
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetOrdersByStatusAdminAsync EXCEPTION] Status {status}: {ex}");
+                return new ApiResponse<List<AdminOrderDetailResponse>>
+                {
+                    Success = false,
+                    Message = "Lỗi hệ thống khi lấy đơn hàng theo trạng thái."
+                };
+            }
+        }
+
+        // --- HÀM HELPER ---
         private OrderResponse MapOrderToOrderResponse(Order order)
         {
+            // Kiểm tra null cơ bản
+            if (order == null)
+            {
+                // Có thể trả về null hoặc một đối tượng rỗng tùy logic xử lý lỗi của bạn
+                return new OrderResponse();
+            }
+
             return new OrderResponse
             {
                 OrderId = order.OrderId,
                 CustomerId = order.CustomerId,
-                TotalAmount = order.TotalAmount.GetValueOrDefault(),
-                TotalPrice = order.TotalPrice.GetValueOrDefault(),
+                // Cân nhắc thêm CustomerName nếu cần và repo đã include:
+                // CustomerName = order.Customer?.User?.FullName,
+                TotalAmount = order.TotalAmount.GetValueOrDefault(), // Dùng GetValueOrDefault để xử lý Nullable<int>
+                TotalPrice = order.TotalPrice.GetValueOrDefault(),   // Dùng GetValueOrDefault để xử lý Nullable<decimal>
                 Address = order.Address,
-                // Thêm các trường địa chỉ chi tiết nếu cần
+                Province = order.Province,
+                District = order.District,
+                Ward = order.Ward,
+                Hamlet = order.Hamlet,
                 TransportUnit = order.TransportUnit,
                 ShippingCode = order.ShippingCode,
-                OrderStatus = order.OrderStatus,
-                CreatedDate = order.CreatedDate.GetValueOrDefault()
+                OrderStatus = order.OrderStatus, // Giả sử OrderStatus không null trong DB/Entity
+                CreatedDate = order.CreatedDate.GetValueOrDefault(), // Dùng GetValueOrDefault để xử lý Nullable<DateTime>
+                UpdatedDate = order.UpdatedDate // UpdatedDate là Nullable<DateTime>
             };
         }
 
-        public Task<ApiResponse<OrderResponse>> GetAllOrderAsync(int userId)
+        private AdminOrderDetailResponse MapOrderToAdminDetail(Order order)
         {
-            throw new NotImplementedException();
-        }
+            // Kiểm tra null cơ bản
+            if (order == null)
+            {
+                return null; // Trả về null nếu order không tồn tại
+            }
 
-        public Task<ApiResponse<OrderDetailResponse>> GetOrderByIdAsync(int orderId, int userId)
-        {
-            throw new NotImplementedException();
+            // Map thông tin cơ bản của Order
+            var response = new AdminOrderDetailResponse
+            {
+                OrderId = order.OrderId,
+                OrderStatus = order.OrderStatus ?? "N/A", // Cung cấp giá trị mặc định nếu có thể null
+                CreatedDate = order.CreatedDate.GetValueOrDefault(),
+                UpdatedDate = order.UpdatedDate,
+                TotalPrice = order.TotalPrice.GetValueOrDefault(),
+                TotalAmount = order.TotalAmount.GetValueOrDefault(),
+
+                // Map thông tin Khách hàng (từ navigation properties đã Include)
+                CustomerId = order.CustomerId,
+                CustomerName = order.Customer?.User?.FullName, // Cần Include(o => o.Customer.User)
+                CustomerEmail = order.Customer?.User?.Email,
+                CustomerPhone = order.Customer?.User?.PhoneNumber,
+
+                // Map địa chỉ giao hàng
+                ShippingAddress = order.Address,
+                ShippingWard = order.Ward,
+                ShippingDistrict = order.District,
+                ShippingProvince = order.Province,
+                ShippingHamlet = order.Hamlet,
+
+                // Map thông tin vận chuyển
+                TransportUnit = order.TransportUnit,
+                ShippingCode = order.ShippingCode,
+
+                // Map danh sách Items kèm thông tin Seller
+                Items = order.CartItems? // Kiểm tra CartItems có null không
+                           .Select(item => new AdminOrderItemDetail
+                           {
+                               CartItemId = item.CartItemId,
+                               ProductId = item.ProductId,
+                               ProductName = item.Product?.ProductName, // Cần Include(o=>o.CartItems.Product)
+                               Quantity = item.Quantity,
+                               // Tính giá mỗi sản phẩm một cách an toàn
+                               PricePerItem = (item.Quantity > 0) ? (item.CartItemPrice / item.Quantity) : 0,
+                               // TotalItemPrice sẽ được DTO tự tính
+                               DesignFile = item.DesignFile,
+
+                               // Thông tin Seller (từ Product -> Seller -> User)
+                               // Cần Include(...Product.Seller.User)
+                               SellerId = item.Product?.SellerId ?? 0,
+                               SellerCompanyName = item.Product?.Seller?.CompanyName,
+                               SellerBankAccountNumber = item.Product?.Seller?.BankAccountNumber,
+                               SellerBankName = item.Product?.Seller?.BankName,
+                               SellerAccountHolderName = item.Product?.Seller?.AccountHolderName,
+                               SellerBankBranch = item.Product?.Seller?.BankBranch,
+                               SellerUserEmail = item.Product?.Seller?.User?.Email,
+                               SellerUserPhone = item.Product?.Seller?.User?.PhoneNumber
+                           })
+                           .ToList() // Chuyển kết quả Select thành List
+                        ?? new List<AdminOrderItemDetail>() // Trả về list rỗng nếu CartItems là null
+            };
+
+            return response;
         }
     }
 }
+
+// --- Hàm Helper ---
+//private OrderResponse MapOrderToOrderResponse(Order order)
+//{
+//    return new OrderResponse
+//    {
+//        OrderId = order.OrderId,
+//        CustomerId = order.CustomerId,
+//        TotalAmount = order.TotalAmount.GetValueOrDefault(),
+//        TotalPrice = order.TotalPrice.GetValueOrDefault(),
+//        Address = order.Address,
+//        // Thêm các trường địa chỉ chi tiết nếu cần
+//        TransportUnit = order.TransportUnit,
+//        ShippingCode = order.ShippingCode,
+//        OrderStatus = order.OrderStatus,
+//        CreatedDate = order.CreatedDate.GetValueOrDefault()
+//    };
+//}

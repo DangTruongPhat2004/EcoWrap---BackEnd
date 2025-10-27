@@ -55,5 +55,10 @@ namespace EcoWrap.DAL.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<Payment?> GetPaymentByOrderIdAsync(int orderId)
+        {
+            return await _context.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId);
+        }
     }
 }
