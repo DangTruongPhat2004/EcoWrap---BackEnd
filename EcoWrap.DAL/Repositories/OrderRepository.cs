@@ -81,11 +81,12 @@ namespace EcoWrap.DAL.Repositories
         public async Task<IEnumerable<Order>> GetAllWithDetailsByCustomerIdAsync(int customerId)
         {
             return await _context.Orders
-                .Where(o => o.CustomerId == customerId) // Filter by CustomerId
-                .Include(o => o.CartItems) // Include the list of CartItems associated with the Order
-                    .ThenInclude(ci => ci.Product) // For each CartItem, include its related Product
-                .OrderByDescending(o => o.CreatedDate) // Order by creation date, newest first
-                .ToListAsync(); // Execute the query and return the list
+                .Where(o => o.CustomerId == customerId) 
+                .Include(o => o.CartItems) 
+                    .ThenInclude(ci => ci.Product)
+                    .ThenInclude(p => p.Seller)
+                .OrderByDescending(o => o.CreatedDate)
+                .ToListAsync();
         }
     }
 }

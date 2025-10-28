@@ -678,7 +678,9 @@ namespace EcoWrap.BLL.Services
                         ProductImageUrl = item.Product?.ImageFile,
                         Quantity = item.Quantity,
                         PricePerItem = (item.Quantity > 0) ? (item.CartItemPrice / item.Quantity) : 0,
-                        DesignFile = item.Product?.DesignFile
+                        DesignFile = item.Product?.DesignFile,
+                        SellerId = item.Product?.SellerId ?? 0,
+                        SellerName = item.Product?.Seller?.CompanyName
                     }).ToList() ?? new List<CustomerOrderItemDetail>() // Handle null CartItems
                 }).ToList(); // Convert the result to a List
 

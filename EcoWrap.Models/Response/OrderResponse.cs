@@ -95,12 +95,12 @@
         public int CartItemId { get; set; }
         public string ProductId { get; set; } = null!;
         public string? ProductName { get; set; }
-        public string? ProductImageUrl { get; set; } // Optional: Ảnh sản phẩm
+        public string? ProductImageUrl { get; set; } 
         public int Quantity { get; set; }
         public decimal PricePerItem { get; set; }
-        // TotalItemPrice is calculated automatically
         public decimal TotalItemPrice => Quantity * PricePerItem;
         public string? DesignFile { get; set; }
-        // No Seller fields here
+        public int SellerId { get; set; } 
+        public string? SellerName { get; set; }
     }
 }
