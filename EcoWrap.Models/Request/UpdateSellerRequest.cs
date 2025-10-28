@@ -15,6 +15,8 @@ namespace EcoWrap.Models.Request
         public string? BankName { get; set; }
         public string? AccountHolderName { get; set; }
         public string? BankBranch { get; set; }
-        public IFormFile QRCodeImage { get; set; }
+        public IFormFile? QRCodeImage { get; set; }
+        public IFormFile? CompanyImage { get; set; }
+        public IFormFile? CompanyBanner { get; set; }
     }
 }

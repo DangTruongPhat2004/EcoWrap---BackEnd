@@ -38,6 +38,12 @@ public partial class Seller
     [Column("QRCodeImage")]
     public string? QrcodeImage { get; set; }
 
+    [Column("Company_image")]
+    public string? CompanyImage { get; set; } 
+
+    [Column("Company_banner")]
+    public string? CompanyBanner { get; set; } 
+
     [InverseProperty("Seller")]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 

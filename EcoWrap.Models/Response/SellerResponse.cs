@@ -11,5 +11,7 @@
         public string? AccountHolderName { get; set; }
         public string? BankBranch { get; set; }
         public string? QrcodeImage { get; set; }
+        public string? CompanyImage { get; set; }
+        public string? CompanyBanner { get; set; }
     }
 }
