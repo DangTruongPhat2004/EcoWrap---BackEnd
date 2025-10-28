@@ -223,7 +223,6 @@ namespace EcoWrap.API.Controllers
         // --- GET ORDERS BY USER ---
         // GET api/order/my-orders
         [HttpGet("my-orders")]
-        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> GetMyOrders()
         {
             var unauthorizedResult = GetCurrentUserId(out int userId);
