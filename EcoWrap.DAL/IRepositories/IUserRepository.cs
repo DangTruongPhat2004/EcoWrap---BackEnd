@@ -14,5 +14,7 @@ namespace EcoWrap.DAL.IRepositories
         Task UpdateAsync(User user);
         Task DeleteAsync(int id);
         Task<int> SaveChangesAsync(); // thêm để quản lý transaction
+        Task<bool> ExistsByUsernameAsync(string username, int? excludeUserId = null);
+        Task<bool> ExistsByEmailAsync(string email, int? excludeUserId = null);
     }
 }

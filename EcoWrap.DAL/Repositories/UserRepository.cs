@@ -76,5 +76,37 @@ namespace EcoWrap.DAL.Repositories
         {
             return await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> ExistsByUsernameAsync(string username, int? excludeUserId = null)
+        {
+            // Build the query step-by-step
+            var query = _context.Users
+                .Where(u => u.Username.Equals(username, System.StringComparison.OrdinalIgnoreCase)); // Case-insensitive check
+
+            // If an ID to exclude is provided, add another Where clause
+            if (excludeUserId.HasValue)
+            {
+                query = query.Where(u => u.UserId != excludeUserId.Value);
+            }
+
+            // Check if any user matches the final query
+            return await query.AnyAsync();
+        }
+
+        public async Task<bool> ExistsByEmailAsync(string email, int? excludeUserId = null)
+        {
+            // Build the query step-by-step
+            var query = _context.Users
+                .Where(u => u.Email.Equals(email, System.StringComparison.OrdinalIgnoreCase)); // Case-insensitive check
+
+            // If an ID to exclude is provided, add another Where clause
+            if (excludeUserId.HasValue)
+            {
+                query = query.Where(u => u.UserId != excludeUserId.Value);
+            }
+
+            // Check if any user matches the final query
+            return await query.AnyAsync();
+        }
     }
 }
