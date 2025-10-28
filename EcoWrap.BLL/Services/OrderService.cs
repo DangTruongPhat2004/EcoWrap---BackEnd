@@ -702,6 +702,7 @@ namespace EcoWrap.BLL.Services
                         CartItemId = item.CartItemId,
                         ProductId = item.ProductId,
                         ProductName = item.Product?.ProductName,
+                        ProductImageUrl = item.Product?.Images?.FirstOrDefault()?.ImageUrl, // Add product image
                         Quantity = item.Quantity,
                         PricePerItem = (item.Quantity > 0) ? (item.CartItemPrice / item.Quantity) : 0, // Tính giá đơn vị
                         //TotalItemPrice = item.CartItemPrice, // Dùng TotalItemPrice tính sẵn của DTO
