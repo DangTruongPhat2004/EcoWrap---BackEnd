@@ -55,7 +55,6 @@ namespace EcoWrap.DAL.Repositories
                     .ThenInclude(c => c!.User)
                 .Include(o => o.CartItems)
                     .ThenInclude(ci => ci.Product)
-                        .ThenInclude(p => p!.Images) // Include product images
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
         public async Task<Order?> GetByIdWithDetailsForAdminAsync(int orderId)
