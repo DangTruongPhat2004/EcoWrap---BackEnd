@@ -630,23 +630,75 @@ namespace EcoWrap.BLL.Services
         }
 
         // --- GET ORDERS BY USER --- (Hàm cần thiết cho Customer)
-        public async Task<ApiResponse<List<OrderResponse>>> GetAllOrdersByUserAsync(int userId)
+        public async Task<ApiResponse<List<CustomerOrderDetailResponse>>> GetAllOrdersByUserAsync(int userId)
         {
+            Console.WriteLine($"[OrderService] Getting detailed orders for User {userId}...");
             try
             {
                 var customer = await _customerRepo.GetByUserIdAsync(userId);
                 if (customer == null)
                 {
-                    return new ApiResponse<List<OrderResponse>> { Success = true, Data = new List<OrderResponse>(), Message = "Không tìm thấy thông tin khách hàng." };
+                    // Return empty list if customer not found
+                    return new ApiResponse<List<CustomerOrderDetailResponse>>
+                    {
+                        Success = true,
+                        Data = new List<CustomerOrderDetailResponse>(),
+                        Message = "Không tìm thấy thông tin khách hàng."
+                    };
                 }
-                var orders = await _orderRepo.GetAllByCustomerIdAsync(customer.CustomerId); // Cần Repo có hàm này
-                var orderResponses = orders.Select(MapOrderToOrderResponse).ToList();
-                return new ApiResponse<List<OrderResponse>> { Success = true, Data = orderResponses, Message = $"Tìm thấy {orderResponses.Count} đơn hàng." };
+
+                // *** Use the REPO METHOD that INCLUDES details ***
+                // ASSUMPTION: You have GetAllWithDetailsByCustomerIdAsync in IOrderRepository/OrderRepository
+                var orders = await _orderRepo.GetAllWithDetailsByCustomerIdAsync(customer.CustomerId);
+
+                // *** MAP to the CUSTOMER-specific DTO ***
+                var orderDetailResponses = orders.Select(order => new CustomerOrderDetailResponse
+                {
+                    // Map Order fields
+                    OrderId = order.OrderId,
+                    OrderStatus = order.OrderStatus,
+                    CreatedDate = order.CreatedDate.GetValueOrDefault(),
+                    UpdatedDate = order.UpdatedDate,
+                    TotalPrice = order.TotalPrice.GetValueOrDefault(),
+                    TotalAmount = order.TotalAmount.GetValueOrDefault(),
+                    ShippingAddress = order.Address,
+                    ShippingWard = order.Ward,
+                    ShippingDistrict = order.District,
+                    ShippingProvince = order.Province,
+                    ShippingHamlet = order.Hamlet,
+                    TransportUnit = order.TransportUnit,
+                    ShippingCode = order.ShippingCode,
+
+                    // Map Items WITHOUT Seller info
+                    Items = order.CartItems?.Select(item => new CustomerOrderItemDetail
+                    {
+                        CartItemId = item.CartItemId,
+                        ProductId = item.ProductId,
+                        ProductName = item.Product?.ProductName,
+                        ProductImageUrl = item.Product?.ImageFile,
+                        Quantity = item.Quantity,
+                        PricePerItem = (item.Quantity > 0) ? (item.CartItemPrice / item.Quantity) : 0,
+                        DesignFile = item.Product?.DesignFile
+                    }).ToList() ?? new List<CustomerOrderItemDetail>() // Handle null CartItems
+                }).ToList(); // Convert the result to a List
+
+                Console.WriteLine($"[OrderService] Retrieved {orderDetailResponses.Count} detailed orders for User {userId}.");
+                return new ApiResponse<List<CustomerOrderDetailResponse>>
+                {
+                    Success = true,
+                    Data = orderDetailResponses,
+                    Message = $"Tìm thấy {orderDetailResponses.Count} đơn hàng."
+                };
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[API GetAllOrdersByUserAsync EXCEPTION] UserId {userId}: {ex.ToString()}");
-                return new ApiResponse<List<OrderResponse>> { Success = false, Message = "Lỗi hệ thống khi lấy danh sách đơn hàng." };
+                return new ApiResponse<List<CustomerOrderDetailResponse>>
+                { // Match return type on error
+                    Success = false,
+                    Message = "Lỗi hệ thống khi lấy danh sách đơn hàng."
+                    // Data will be null
+                };
             }
         }
 

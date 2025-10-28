@@ -78,5 +78,14 @@ namespace EcoWrap.DAL.Repositories
                 .OrderByDescending(o => o.CreatedDate) 
                 .ToListAsync();
         }
+        public async Task<IEnumerable<Order>> GetAllWithDetailsByCustomerIdAsync(int customerId)
+        {
+            return await _context.Orders
+                .Where(o => o.CustomerId == customerId) // Filter by CustomerId
+                .Include(o => o.CartItems) // Include the list of CartItems associated with the Order
+                    .ThenInclude(ci => ci.Product) // For each CartItem, include its related Product
+                .OrderByDescending(o => o.CreatedDate) // Order by creation date, newest first
+                .ToListAsync(); // Execute the query and return the list
+        }
     }
 }

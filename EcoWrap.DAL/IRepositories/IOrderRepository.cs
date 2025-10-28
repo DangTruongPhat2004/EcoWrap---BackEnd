@@ -14,5 +14,6 @@ namespace EcoWrap.DAL.IRepositories
         Task<Order?> GetByIdWithDetailsAsync(int orderId);
         Task<Order?> GetByIdWithDetailsForAdminAsync(int orderId);
         Task<IEnumerable<Order>> GetAllByStatusAdminAsync(string status);
+        Task<IEnumerable<Order>> GetAllWithDetailsByCustomerIdAsync(int customerId);
     }
 }

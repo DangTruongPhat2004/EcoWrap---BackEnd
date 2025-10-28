@@ -61,4 +61,46 @@
         public string? DesignFile { get; set; } // Link file thiết kế (nếu có)
         // Thêm các thuộc tính sản phẩm khác nếu cần (VD: Size, Material...)
     }
+
+    public class CustomerOrderDetailResponse
+    {
+        // --- Thông tin Order ---
+        public int OrderId { get; set; }
+        public string OrderStatus { get; set; } = null!;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+        public decimal TotalPrice { get; set; }
+        public int TotalAmount { get; set; } // Tổng số lượng sản phẩm
+
+        // --- Địa chỉ Giao hàng ---
+        public string? ShippingAddress { get; set; }
+        public string? ShippingWard { get; set; }
+        public string? ShippingDistrict { get; set; }
+        public string? ShippingProvince { get; set; }
+        public string? ShippingHamlet { get; set; }
+
+        // --- Thông tin Vận chuyển ---
+        public string? TransportUnit { get; set; }
+        public string? ShippingCode { get; set; }
+
+        // --- Danh sách Items (Không có thông tin Seller) ---
+        public List<CustomerOrderItemDetail> Items { get; set; } = new List<CustomerOrderItemDetail>();
+    }
+
+    /// <summary>
+    /// DTO chi tiết Item hiển thị cho Customer (kế thừa từ OrderItemDetailResponse).
+    /// </summary>
+    public class CustomerOrderItemDetail
+    {
+        public int CartItemId { get; set; }
+        public string ProductId { get; set; } = null!;
+        public string? ProductName { get; set; }
+        public string? ProductImageUrl { get; set; } // Optional: Ảnh sản phẩm
+        public int Quantity { get; set; }
+        public decimal PricePerItem { get; set; }
+        // TotalItemPrice is calculated automatically
+        public decimal TotalItemPrice => Quantity * PricePerItem;
+        public string? DesignFile { get; set; }
+        // No Seller fields here
+    }
 }
