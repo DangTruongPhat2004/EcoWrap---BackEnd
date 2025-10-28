@@ -961,6 +961,7 @@ namespace EcoWrap.BLL.Services
                                SellerCompanyName = item.Product?.Seller?.CompanyName,
                                SellerBankAccountNumber = item.Product?.Seller?.BankAccountNumber,
                                SellerBankName = item.Product?.Seller?.BankName,
+                               SellerQRCodeImage = item.Product?.Seller?.QrcodeImage,
                                SellerAccountHolderName = item.Product?.Seller?.AccountHolderName,
                                SellerBankBranch = item.Product?.Seller?.BankBranch,
                                SellerUserEmail = item.Product?.Seller?.User?.Email,

@@ -52,6 +52,7 @@ namespace EcoWrap.Models.Response // Hoặc namespace phù hợp
         // Thêm các thông tin cần thiết để Admin chuyển tiền
         public string? SellerBankAccountNumber { get; set; }
         public string? SellerBankName { get; set; }
+        public string? SellerQRCodeImage { get; set; }
         public string? SellerAccountHolderName { get; set; }
         public string? SellerBankBranch { get; set; }
         // Có thể thêm Seller Email/Phone nếu cần liên hệ
