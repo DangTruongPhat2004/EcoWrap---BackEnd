@@ -22,19 +22,22 @@ namespace EcoWrap.API.Controllers
         private readonly ICartItemRepository _cartItemRepo;
         private readonly IProductRepository _productRepo;
         private readonly ICustomerRepository _customerRepo;
+        private readonly IConfiguration _configuration;
 
         public PaymentController(
             IPaymentService paymentService,
             IOrderRepository orderRepo,
             ICartItemRepository cartItemRepo,
             IProductRepository productRepo,
-            ICustomerRepository customerRepo) 
+            ICustomerRepository customerRepo,
+            IConfiguration configuration) 
         {
             _paymentService = paymentService;
             _orderRepo = orderRepo;
             _cartItemRepo = cartItemRepo;
             _productRepo = productRepo;
             _customerRepo = customerRepo;
+            _configuration = configuration;
         }
 
         // Define a simple request model
@@ -113,9 +116,10 @@ namespace EcoWrap.API.Controllers
                     ));
                 }
 
-                // Define Return and Cancel URLs (can be from config or request)
-                string returnUrl = "https://yourdomain.com/payment/success"; // Replace with your actual URL
-                string cancelUrl = "https://yourdomain.com/payment/cancel";   // Replace with your actual URL
+                // Get frontend URL from configuration
+                var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+                string returnUrl = $"{frontendUrl}/payment/return";
+                string cancelUrl = $"{frontendUrl}/payment/return";
 
                 // Call Payment Service
                 var paymentLinkResponse = await _paymentService.CreatePaymentLinkAsync(
