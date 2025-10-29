@@ -29,7 +29,6 @@ namespace EcoWrap.API.Controllers
 
         // ------------------------ [GET SELLER BY ID] ------------------------
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetSellerById(int id)
         {
             var seller = await _sellerService.GetBySellerIdAsync(id);

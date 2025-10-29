@@ -11,6 +11,7 @@ namespace EcoWrap.BLL.IServices
         Task<bool> CreateProductAsync(int userId, CreateProductRequest request);
         Task<IEnumerable<Product>> GetAllAsync();
         Task<Product?> GetByIdAsync(string id);
+        Task<IEnumerable<Product>> GetProductsBySellerIdAsync(int sellerId);
         Task<bool> DeleteAsync(string id, int userId);
         Task<IEnumerable<Product>> GetProductsBySellerAsync(int userId);
         Task<bool> UpdateProductAsync(string productId, int userId, UpdateProductRequest request);

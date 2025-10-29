@@ -108,6 +108,14 @@ namespace EcoWrap.BLL.Services
             return await _productRepo.GetAllBySellerIdAsync(seller.SellerId);
         }
 
+        public async Task<IEnumerable<Product>> GetProductsBySellerIdAsync(int sellerId)
+        {
+            var sellerExists = await _sellerRepo.GetBySellerIdAsync(sellerId);
+            if (sellerExists == null)
+                throw new InvalidOperationException($"Không tìm thấy người bán với ID: {sellerId}.");
+            return await _productRepo.GetAllBySellerIdAsync(sellerId);
+        }
+
         // -------------------- [UPDATE] --------------------
         public async Task<bool> UpdateProductAsync(string productId, int userId, UpdateProductRequest request)
         {

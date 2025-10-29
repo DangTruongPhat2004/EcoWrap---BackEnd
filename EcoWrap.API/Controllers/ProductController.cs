@@ -10,6 +10,7 @@ namespace EcoWrap.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -72,6 +73,32 @@ namespace EcoWrap.API.Controllers
                 return NotFound(new { message = "Không tìm thấy sản phẩm." });
 
             return Ok(product);
+        }
+
+        [HttpGet("seller/{sellerId}")]
+        public async Task<IActionResult> GetProductsBySellerId(int sellerId)
+        {
+            try
+            {
+                var products = await _productService.GetProductsBySellerIdAsync(sellerId);
+
+                // Kiểm tra xem products có rỗng không (nếu seller không có sản phẩm)
+                // Trả về Ok(products) vẫn ổn (sẽ là một mảng rỗng [])
+
+                return Ok(products);
+            }
+            catch (InvalidOperationException ex) // Bắt lỗi nếu service ném ra (vd: seller không tồn tại)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "Không thể lấy danh sách sản phẩm.",
+                    detail = ex.Message
+                });
+            }
         }
 
         // -------------------- [GET PRODUCTS BY CURRENT SELLER] --------------------
