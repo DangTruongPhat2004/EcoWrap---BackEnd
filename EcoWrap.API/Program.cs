@@ -308,17 +308,17 @@ namespace EcoWrap.API
 
             var app = builder.Build();
            
-            if (app.Environment.IsDevelopment())
-            {
+            //if (app.Environment.IsDevelopment())
+            //{
                 app.UseDeveloperExceptionPage(); // show stacktrace trong browser
-            }
+            //}
 
             // ===== Middleware =====
-            if (app.Environment.IsDevelopment())
-            {
+            //if (app.Environment.IsDevelopment())
+            //{
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            //}
 
             //app.UseHttpsRedirection();
 
