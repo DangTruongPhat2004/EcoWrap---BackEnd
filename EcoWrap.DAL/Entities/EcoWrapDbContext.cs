@@ -192,17 +192,22 @@ public partial class EcoWrapDbContext : DbContext
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__CDC95E7049E64DF4");
+            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__Feedback_id");
 
-            entity.Property(e => e.ReviewDate).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.FeedbackDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("Feedback_date");
 
-            entity.HasOne(d => d.Customer).WithMany(p => p.Feedbacks)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Review_Customer");
+            entity.Property(e => e.UserId).HasColumnName("User_id");
 
-            entity.HasOne(d => d.Product).WithMany(p => p.Feedbacks)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Review_Product");
+            entity.Property(e => e.Rating).HasColumnType("tinyint");
+
+            entity.HasOne(d => d.User) 
+                .WithMany(p => p.Feedbacks)
+                .HasForeignKey(d => d.UserId) 
+                .OnDelete(DeleteBehavior.ClientSetNull) 
+                .HasConstraintName("FK_Feedback_Users"); 
         });
 
         modelBuilder.Entity<Inventory>(entity =>

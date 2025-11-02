@@ -23,9 +23,6 @@ public partial class Customer
     public virtual ICollection<Collection> Collections { get; set; } = new List<Collection>();
 
     [InverseProperty("Customer")]
-    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
-
-    [InverseProperty("Customer")]
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     [ForeignKey("UserId")]

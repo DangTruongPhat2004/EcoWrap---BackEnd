@@ -63,4 +63,6 @@ public partial class User
     [InverseProperty("User")]
     public virtual ICollection<EmailVerification> EmailVerifications { get; set; } = new List<EmailVerification>();
 
+    [InverseProperty("User")]
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 }

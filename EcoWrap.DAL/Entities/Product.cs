@@ -87,8 +87,5 @@ namespace EcoWrap.DAL.Entities
 
         [InverseProperty("Product")]
         public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
-
-        [InverseProperty("Product")]
-        public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
     }
 }

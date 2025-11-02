@@ -108,5 +108,36 @@ namespace EcoWrap.DAL.Repositories
             // Check if any user matches the final query
             return await query.AnyAsync();
         }
+
+        public async Task<(int TotalVerified, int TotalCustomers, int TotalSellers)> GetUserMetricsAsync()
+        {
+            // Định nghĩa Role ID theo CSDL của bạn
+            const int CUSTOMER_ROLE_ID = 2;
+            const int SELLER_ROLE_ID = 3;
+
+            // 1. Lọc các User đã xác thực (IsVerified = 1)
+            // 2. Group by RoleId và đếm số lượng mỗi nhóm
+            var metrics = await _context.Users
+                .Where(u => u.IsVerified == true)
+                .GroupBy(u => u.RoleId) // Group theo RoleId (hoặc RoleId ?? 0 nếu RoleId có thể null)
+                .Select(g => new
+                {
+                    RoleId = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            // 3. Xử lý kết quả
+            // Lấy tổng (tất cả các nhóm đã xác thực)
+            int totalVerified = metrics.Sum(m => m.Count);
+
+            // Lấy riêng Customer (Role 2)
+            int totalCustomers = metrics.FirstOrDefault(m => m.RoleId == CUSTOMER_ROLE_ID)?.Count ?? 0;
+
+            // Lấy riêng Seller (Role 3)
+            int totalSellers = metrics.FirstOrDefault(m => m.RoleId == SELLER_ROLE_ID)?.Count ?? 0;
+
+            return (totalVerified, totalCustomers, totalSellers);
+        }
     }
 }

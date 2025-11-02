@@ -88,5 +88,25 @@ namespace EcoWrap.DAL.Repositories
                 .OrderByDescending(o => o.CreatedDate)
                 .ToListAsync();
         }
+
+        public async Task<(int Count, decimal TotalRevenue)> GetCompletedOrderMetricsAsync()
+        {
+            // Tạo 1 query cơ sở cho các đơn hàng "Completed"
+            var completedOrdersQuery = _context.Orders
+                .Where(o => o.OrderStatus == "Completed");
+
+            // 1. Lấy tổng số lượng
+            int count = await completedOrdersQuery.CountAsync();
+
+            // 2. Lấy tổng tiền
+            decimal totalRevenue = 0;
+            if (count > 0)
+            {
+                // Giả sử TotalPrice có thể null, dùng ?? 0m (0 decimal)
+                totalRevenue = await completedOrdersQuery.SumAsync(o => o.TotalPrice ?? 0m);
+            }
+
+            return (count, totalRevenue);
+        }
     }
 }
