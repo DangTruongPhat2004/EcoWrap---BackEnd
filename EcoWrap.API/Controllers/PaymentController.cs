@@ -117,7 +117,7 @@ namespace EcoWrap.API.Controllers
                 }
 
                 // Get frontend URL from configuration
-                var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+                var frontendUrl = _configuration["FrontendUrl"] ?? "https://ecowrap.vercel.app";
                 string returnUrl = $"{frontendUrl}/payment/return";
                 string cancelUrl = $"{frontendUrl}/payment/return";
 

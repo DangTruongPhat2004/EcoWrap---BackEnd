@@ -60,7 +60,8 @@ namespace EcoWrap.API
                         "http://localhost:5173",
                         "http://127.0.0.1:5173",
                         "https://localhost:5173",
-                        "https://127.0.0.1:5173"
+                        "https://127.0.0.1:5173",
+                        "https://ecowrap.vercel.app"
                     )
                     .AllowAnyHeader()
                     .AllowAnyMethod()
@@ -242,7 +243,7 @@ namespace EcoWrap.API
             builder.Services.AddCors(opt =>
             {
                 opt.AddPolicy("chat", p => p
-                    .WithOrigins("http://localhost:5173", "http://localhost:3000")
+                    .WithOrigins("http://localhost:5173", "http://localhost:3000", "https://ecowrap.vercel.app")
                     .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
             });
 
