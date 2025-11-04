@@ -85,7 +85,7 @@ namespace EcoWrap.BLL.Services
                 ImageFile = imageUrl,
                 CertificateFile = certUrl,
                 DesignFile = designUrl,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.UtcNow.AddHours(7)
             };
 
             await _productRepo.AddAsync(product);
@@ -96,7 +96,7 @@ namespace EcoWrap.BLL.Services
 
         // -------------------- [GET] --------------------
         public async Task<IEnumerable<Product>> GetAllAsync()
-            => await _productRepo.GetAllAsync();
+            => await _productRepo.GetActiveAsync();
 
         public async Task<Product?> GetByIdAsync(string id)
             => await _productRepo.GetByIdAsync(id);

@@ -15,5 +15,6 @@ namespace EcoWrap.DAL.IRepositories
         Task<IEnumerable<Product>> GetAllBySellerIdAsync(int sellerId);
         Task<bool> ProductIdExistsAsync(string productId);
         Task<bool> CategoryExistsAsync(int categoryId);
+        Task<IEnumerable<Product>> GetActiveAsync();
     }
 }

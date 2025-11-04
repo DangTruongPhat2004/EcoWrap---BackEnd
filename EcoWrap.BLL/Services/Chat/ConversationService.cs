@@ -33,8 +33,8 @@ namespace EcoWrap.BLL.Services
             {
                 convo = new Conversation
                 {
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow.AddHours(7),
+                    UpdatedAt = DateTime.UtcNow.AddHours(7),
                     IsClosed = false,
                     Participants =
                     {

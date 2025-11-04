@@ -89,8 +89,8 @@ namespace EcoWrap.BLL.Services
                 Ward = request.Ward,
                 Hamlet = request.Hamlet,
                 OrderStatus = "Pending", // Trạng thái ban đầu
-                CreatedDate = DateTime.UtcNow,
-                UpdatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.UtcNow.AddHours(7),
+                UpdatedDate = DateTime.UtcNow.AddHours(7)
                 // ShippingCode, TransportUnit sẽ null ban đầu
             };
 
@@ -189,7 +189,7 @@ namespace EcoWrap.BLL.Services
 
                     // 5. Cập nhật trạng thái Order -> Packaging
                     order.OrderStatus = "Packaging";
-                    order.UpdatedDate = DateTime.UtcNow;
+                    order.UpdatedDate = DateTime.UtcNow.AddHours(7);
                     // Không cần UpdateAsync nếu repo dùng DbContext tracking
                     await _orderRepo.SaveChangesAsync(); // Lưu thay đổi trạng thái Order
                     Console.WriteLine($"[OrderService] Order {orderId} status updated to Packaging.");
@@ -272,7 +272,7 @@ namespace EcoWrap.BLL.Services
                     order.TransportUnit = ghtkResponse.TransportUnit;
                     order.ShippingCode = ghtkResponse.ShippingCode;
                     order.OrderStatus = "Shipping"; // <-- Đổi Status
-                    order.UpdatedDate = DateTime.UtcNow;
+                    order.UpdatedDate = DateTime.UtcNow.AddHours(7);
 
                     // Không cần gọi UpdateAsync nếu repo dùng DbContext tracking
                     await _orderRepo.SaveChangesAsync(); // Lưu thay đổi vào DB
@@ -337,7 +337,7 @@ namespace EcoWrap.BLL.Services
 
                 // Cập nhật trạng thái
                 order.OrderStatus = "Completed";
-                order.UpdatedDate = DateTime.UtcNow;
+                order.UpdatedDate = DateTime.UtcNow.AddHours(7);
 
                 // Không cần UpdateAsync nếu repo dùng DbContext tracking
                 await _orderRepo.SaveChangesAsync();
@@ -413,7 +413,7 @@ namespace EcoWrap.BLL.Services
 
                     // *** Cập nhật trạng thái Order -> Canceled ***
                     order.OrderStatus = "Canceled";
-                    order.UpdatedDate = DateTime.UtcNow;
+                    order.UpdatedDate = DateTime.UtcNow.AddHours(7);
                     // Không cần UpdateAsync nếu repo dùng DbContext tracking
                     await _orderRepo.SaveChangesAsync(); // Lưu trạng thái Order
 
@@ -537,7 +537,7 @@ namespace EcoWrap.BLL.Services
 
                     // *** CẬP NHẬT TRẠNG THÁI ORDER -> DECLINED ***
                     order.OrderStatus = "Declined";
-                    order.UpdatedDate = DateTime.UtcNow;
+                    order.UpdatedDate = DateTime.UtcNow.AddHours(7);
                     // Không cần UpdateAsync nếu repo dùng DbContext tracking
                     await _orderRepo.SaveChangesAsync(); // Lưu trạng thái Order + ShippingCode=null (nếu có)
 

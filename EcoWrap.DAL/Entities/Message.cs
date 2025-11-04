@@ -15,7 +15,7 @@ namespace EcoWrap.DAL.Entities
         public string? AttachmentUrl { get; set; }
         public string? AttachmentName { get; set; }
         public int? AttachmentSize { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         public Conversation Conversation { get; set; } = null!;
         public ICollection<MessageReceipt> Receipts { get; set; } = new List<MessageReceipt>();

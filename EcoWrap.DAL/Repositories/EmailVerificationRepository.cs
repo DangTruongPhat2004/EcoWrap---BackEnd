@@ -26,7 +26,7 @@ namespace EcoWrap.DAL.Repositories
                     ev.User.Email == email &&
                     ev.VerificationCode == code &&
                     ev.IsUsed == false &&
-                    ev.Expiration > DateTime.UtcNow
+                    ev.Expiration > DateTime.UtcNow.AddHours(7)
                 );
         }
 

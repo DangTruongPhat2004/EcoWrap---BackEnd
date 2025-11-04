@@ -252,6 +252,45 @@ namespace EcoWrap.API.Controllers
             }
         }
 
+        // GET api/order/my-orders/detail/{orderId}
+        [HttpGet("my-orders/detail/{orderId}")]
+        public async Task<IActionResult> GetMyOrderDetail(int orderId)
+        {
+            var unauthorizedResult = GetCurrentUserId(out int userId);
+            if (unauthorizedResult != null) return unauthorizedResult;
+
+            Console.WriteLine($"[API] Request received for GetMyOrderDetail {orderId} by User {userId}.");
+            try
+            {
+                // Tái sử dụng hàm Service GetOrderByIdAsync với logic kiểm tra quyền sở hữu
+                var result = await _orderService.GetOrderByIdAsync(orderId, userId);
+
+                if (result.Success)
+                {
+                    Console.WriteLine($"[API] GetMyOrderDetail {orderId} by User {userId} succeeded.");
+                    return Ok(result);
+                }
+                else
+                {
+                    if (result.Message.Contains("Không tìm thấy đơn hàng"))
+                        return NotFound(result);
+
+                    if (result.Message.Contains("không có quyền xem"))
+                    {
+                        Console.WriteLine($"[API] GetMyOrderDetail {orderId} by User {userId}: Forbidden by service (Not owner).");
+                        return Forbid(); // 403 Forbidden nếu không phải chủ sở hữu
+                    }
+
+                    return BadRequest(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[API GetMyOrderDetail EXCEPTION] OrderId {orderId}, UserId {userId}: {ex.ToString()}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống khi lấy chi tiết đơn hàng của bạn." });
+            }
+        }
+
         // --- GET ORDER BY ID (CUSTOMER / ADMIN / SELLER VIEW) ---
         // GET api/order/{orderId}
         [HttpGet("{orderId}")]

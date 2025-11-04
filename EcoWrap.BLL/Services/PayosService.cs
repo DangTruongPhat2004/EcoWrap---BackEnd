@@ -99,7 +99,7 @@ namespace EcoWrap.BLL.Services
                 if (amount > int.MaxValue)
                     throw new InvalidOperationException("Amount vượt quá giới hạn PayOS int max.");
 
-                long orderCodeLong = long.Parse($"{orderId}{DateTime.UtcNow:MMddHHmmss}");
+                long orderCodeLong = long.Parse($"{orderId}{DateTime.UtcNow.AddHours(7):MMddHHmmss}");
 
                 var paymentData = new PaymentData(
                     orderCode: orderCodeLong,
@@ -308,7 +308,7 @@ namespace EcoWrap.BLL.Services
 
                             // Cập nhật trạng thái Order -> Packaging
                             order.OrderStatus = "Packaging"; // *** ĐỔI THÀNH PACKAGING ***
-                            order.UpdatedDate = DateTime.UtcNow;
+                            order.UpdatedDate = DateTime.UtcNow.AddHours(7);
                             // Không cần UpdateAsync nếu repo dùng DbContext tracking
                             await _orderRepository.SaveChangesAsync(); // Lưu thay đổi Order
                             Console.WriteLine($"[PayOS SDK] Order {orderId} status updated to Packaging.");

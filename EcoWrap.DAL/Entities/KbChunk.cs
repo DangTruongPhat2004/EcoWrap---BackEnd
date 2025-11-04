@@ -15,6 +15,6 @@ namespace EcoWrap.DAL.Entities
 
         // Điểm tiện: lưu thêm checksum để tránh index trùng
         [MaxLength(64)] public string? Sha256 { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
     }
 }

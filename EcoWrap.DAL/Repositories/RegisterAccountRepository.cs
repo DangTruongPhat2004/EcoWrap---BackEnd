@@ -55,7 +55,7 @@ namespace EcoWrap.DAL.Repositories
                     v.UserId == userId &&
                     v.VerificationCode == code &&
                     !v.IsUsed &&
-                    v.Expiration > DateTime.UtcNow);
+                    v.Expiration > DateTime.UtcNow.AddHours(7));
         }
 
         public Task MarkVerificationAsUsedAsync(EmailVerification verification)

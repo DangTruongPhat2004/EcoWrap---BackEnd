@@ -54,13 +54,13 @@ namespace EcoWrap.DAL.Repositories.Chat
                 {
                     MessageId = messageId,
                     UserId = userId,                // int
-                    DeliveredAt = DateTime.UtcNow
+                    DeliveredAt = DateTime.UtcNow.AddHours(7)
                 };
                 _db.MessageReceipts.Add(r);
             }
 
             if (read)
-                r.ReadAt = DateTime.UtcNow;
+                r.ReadAt = DateTime.UtcNow.AddHours(7);
 
             await _db.SaveChangesAsync(ct);
         }

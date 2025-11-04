@@ -81,7 +81,7 @@ namespace EcoWrap.DAL.Repositories
         {
             // Build the query step-by-step
             var query = _context.Users
-                .Where(u => u.Username.Equals(username, System.StringComparison.OrdinalIgnoreCase)); // Case-insensitive check
+                .Where(u => u.Username.ToLower() == username.ToLower());
 
             // If an ID to exclude is provided, add another Where clause
             if (excludeUserId.HasValue)
@@ -97,7 +97,7 @@ namespace EcoWrap.DAL.Repositories
         {
             // Build the query step-by-step
             var query = _context.Users
-                .Where(u => u.Email.Equals(email, System.StringComparison.OrdinalIgnoreCase)); // Case-insensitive check
+                .Where(u => u.Email.ToLower() == email.ToLower());
 
             // If an ID to exclude is provided, add another Where clause
             if (excludeUserId.HasValue)

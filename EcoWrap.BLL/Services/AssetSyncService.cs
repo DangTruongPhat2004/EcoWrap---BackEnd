@@ -93,7 +93,7 @@ public class AssetSyncService
                         Category = cat,
                         Tags = tags,
                         IsActive = true,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.UtcNow.AddHours(7)
                     });
                     created++;
                 }

@@ -66,7 +66,7 @@ namespace EcoWrap.BLL.Services
                 Email = request.Email,
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
-                RegistrationDate = DateTime.UtcNow,
+                RegistrationDate = DateTime.UtcNow.AddHours(7),
                 IsVerified = false,
                 RoleId = 2 // Customer
             };
@@ -91,9 +91,9 @@ namespace EcoWrap.BLL.Services
                 {
                     UserId = newUser.UserId,
                     VerificationCode = confirmCode,
-                    Expiration = DateTime.UtcNow.AddMinutes(15),
+                    Expiration = DateTime.UtcNow.AddHours(7).AddMinutes(15),
                     IsUsed = false,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow.AddHours(7)
                 };
                 await _verificationRepository.AddAsync(verification);
 

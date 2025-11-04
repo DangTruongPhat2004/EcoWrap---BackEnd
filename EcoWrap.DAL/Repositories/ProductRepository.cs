@@ -64,5 +64,12 @@ namespace EcoWrap.DAL.Repositories
             => await _context.Products.AnyAsync(p => p.ProductId == productId);
         public async Task<bool> CategoryExistsAsync(int categoryId)
             => await _context.Categories.AnyAsync(c => c.CategoryId == categoryId);
+
+        public async Task<IEnumerable<Product>> GetActiveAsync()
+        {
+            return await _context.Products
+                .Where(p => p.IsActive)
+                .ToListAsync();
+        }
     }
 }

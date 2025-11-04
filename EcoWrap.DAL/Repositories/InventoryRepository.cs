@@ -95,7 +95,7 @@ namespace EcoWrap.DAL.Repositories
 
                 // Use StockQuantity
                 inventory.StockQuantity -= quantityToTakeFromThisWarehouse;
-                inventory.LastUpdated = DateTime.UtcNow;
+                inventory.LastUpdated = DateTime.UtcNow.AddHours(7);
                 _context.Inventories.Update(inventory);
 
                 remainingQuantityToDecrease -= quantityToTakeFromThisWarehouse;
@@ -130,7 +130,7 @@ namespace EcoWrap.DAL.Repositories
 
             // 2. Increase stock, use StockQuantity
             inventory.StockQuantity += quantityToIncrease; // Use StockQuantity
-            inventory.LastUpdated = DateTime.UtcNow;
+            inventory.LastUpdated = DateTime.UtcNow.AddHours(7);
             _context.Inventories.Update(inventory);
         }
     }

@@ -42,8 +42,8 @@ namespace EcoWrap.BLL.Services
             {
                 UserId = user.UserId,
                 VerificationCode = otp,
-                Expiration = DateTime.UtcNow.AddMinutes(15),
-                CreatedAt = DateTime.UtcNow
+                Expiration = DateTime.UtcNow.AddHours(7).AddMinutes(15),
+                CreatedAt = DateTime.UtcNow.AddHours(7)
             };
 
             await _verificationRepository.AddAsync(verification);
@@ -73,7 +73,7 @@ namespace EcoWrap.BLL.Services
                 .FirstOrDefault();
 
             // 3. Nếu OTP sai hoặc hết hạn → fail
-            if (verification == null || verification.Expiration <= DateTime.UtcNow)
+            if (verification == null || verification.Expiration <= DateTime.UtcNow.AddHours(7))
                 return false;
 
             // 4. Hash và cập nhật mật khẩu

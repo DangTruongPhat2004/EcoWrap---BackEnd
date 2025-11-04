@@ -46,7 +46,7 @@ namespace EcoWrap.BLL.Services
                 ProductId = request.ProductId,
                 WarehouseId = request.WarehouseId,
                 StockQuantity = request.StockQuantity,
-                LastUpdated = DateTime.UtcNow
+                LastUpdated = DateTime.UtcNow.AddHours(7)
             };
 
             await _inventoryRepo.AddAsync(inventory);
@@ -87,7 +87,7 @@ namespace EcoWrap.BLL.Services
                 throw new InvalidOperationException("Inventory không tồn tại.");
 
             inventory.StockQuantity = request.StockQuantity;
-            inventory.LastUpdated = DateTime.UtcNow;
+            inventory.LastUpdated = DateTime.UtcNow.AddHours(7);
 
             await _inventoryRepo.UpdateAsync(inventory);
             await _inventoryRepo.SaveChangesAsync();

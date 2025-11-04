@@ -65,7 +65,7 @@ public class AdminTemplatesController : ControllerBase
             DefaultBleed = dto.DefaultBleed,
             DefaultSafeArea = dto.DefaultSafeArea,
             IsActive = dto.IsActive,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddHours(7)
         };
         _db.Templates.Add(t);
         await _db.SaveChangesAsync(ct);
@@ -152,7 +152,7 @@ public class AdminTemplatesController : ControllerBase
             Bleed = bleed,
             SafeArea = safe,
             Layers = layers,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddHours(7)
         };
 
         _db.TemplateVersions.Add(ver);
@@ -234,7 +234,7 @@ public class AdminTemplatesController : ControllerBase
             Bleed = ov?.Bleed ?? tpl.DefaultBleed,
             SafeArea = ov?.SafeArea ?? tpl.DefaultSafeArea,
             Layers = layers,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddHours(7)
         };
 
         _db.TemplateVersions.Add(ver);

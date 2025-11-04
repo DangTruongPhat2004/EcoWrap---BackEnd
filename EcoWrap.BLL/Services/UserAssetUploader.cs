@@ -125,7 +125,7 @@ public class UserAssetUploader
             Height = height,
             Tags = tags ?? "",
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddHours(7)
         };
 
         _db.UserAssets.Add(asset);

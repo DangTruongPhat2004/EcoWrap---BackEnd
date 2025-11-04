@@ -48,7 +48,7 @@ namespace EcoWrap.BLL.Services
                     UserId = userId,
                     Comment = request.Comment,
                     Rating = request.Rating,
-                    FeedbackDate = DateTime.UtcNow
+                    FeedbackDate = DateTime.UtcNow.AddHours(7)
                 };
 
                 await _feedbackRepo.AddAsync(feedback);
@@ -174,7 +174,7 @@ namespace EcoWrap.BLL.Services
                 // Cập nhật
                 feedback.Comment = request.Comment;
                 feedback.Rating = request.Rating;
-                feedback.FeedbackDate = DateTime.UtcNow;
+                feedback.FeedbackDate = DateTime.UtcNow.AddHours(7);
 
                 await _feedbackRepo.SaveChangesAsync();
 

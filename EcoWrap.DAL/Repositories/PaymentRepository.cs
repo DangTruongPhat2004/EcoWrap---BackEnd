@@ -39,7 +39,7 @@ namespace EcoWrap.DAL.Repositories
             payment.TransactionCode = transactionCode;
 
             // Nếu bạn muốn cập nhật thời gian
-            // payment.UpdatedDate = DateTime.UtcNow; 
+            // payment.UpdatedDate = DateTime.UtcNow.AddHours(7); 
 
             await _context.SaveChangesAsync();
             return true;

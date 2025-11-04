@@ -13,7 +13,7 @@
     public decimal Bleed { get; set; }
     public decimal SafeArea { get; set; }
     public string? Layers { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
     public Template Template { get; set; } = default!;
 }

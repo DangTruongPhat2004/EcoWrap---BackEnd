@@ -69,7 +69,7 @@ namespace EcoWrap.BLL.Services.Chat
                 m.ContentType == ChatContentType.text
                 ? (m.Body ?? string.Empty)[..Math.Min(200, m.Body?.Length ?? 0)]
                 : $"[{m.ContentType}]";
-            conv.UpdatedAt = DateTime.UtcNow;
+            conv.UpdatedAt = DateTime.UtcNow.AddHours(7);
             await _convRepo.SaveChangesAsync(ct);
 
             var dto = Map(m);
@@ -94,7 +94,7 @@ namespace EcoWrap.BLL.Services.Chat
 
             // Convert int callerId to Guid before passing to PublishReadReceiptAsync
             Guid callerGuid = new Guid(callerId, 0, 0, new byte[8]);
-            await _bus.PublishReadReceiptAsync(conversationId, messageId, callerGuid, DateTime.UtcNow, ct);
+            await _bus.PublishReadReceiptAsync(conversationId, messageId, callerGuid, DateTime.UtcNow.AddHours(7), ct);
             return true;
         }
 

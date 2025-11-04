@@ -30,8 +30,8 @@ public class Custom
     // JSON array các tag (string[])
     public string? TagsJson { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
     public DateTime? DeletedAt { get; set; }
 
     // Concurrency

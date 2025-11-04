@@ -89,8 +89,8 @@ public class CustomDesignsService : ICustomDesignsService
             DielineSvgUrl = body.DielineSvgUrl,
             DesignData = body.DesignData,
             TagsJson = body.Tags is { Count: > 0 } ? JsonSerializer.Serialize(body.Tags) : null,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddHours(7),
+            UpdatedAt = DateTime.UtcNow.AddHours(7)
         };
 
         _db.Customs.Add(d);
@@ -166,7 +166,7 @@ public class CustomDesignsService : ICustomDesignsService
             }
         }
 
-        d.UpdatedAt = DateTime.UtcNow;
+        d.UpdatedAt = DateTime.UtcNow.AddHours(7);
         await _db.SaveChangesAsync(ct);
 
         var fresh = await _db.Customs.Include(x => x.Assets)
@@ -187,7 +187,7 @@ public class CustomDesignsService : ICustomDesignsService
         }
         else
         {
-            d.DeletedAt = DateTime.UtcNow;
+            d.DeletedAt = DateTime.UtcNow.AddHours(7);
         }
 
         await _db.SaveChangesAsync(ct);
