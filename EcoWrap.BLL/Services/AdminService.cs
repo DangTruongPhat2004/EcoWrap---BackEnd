@@ -119,10 +119,36 @@ namespace EcoWrap.BLL.Services
             if (admin == null)
                 throw new InvalidOperationException("Không tìm thấy admin để xóa.");
 
-            await _adminRepo.DeleteAsync(admin);
-            await _adminRepo.SaveChangesAsync();
+            // Lấy thông tin User tương ứng
+            var user = await _userRepo.GetByIdAsync(admin.UserId);
+            if (user == null)
+                throw new InvalidOperationException("Không tìm thấy người dùng (User) liên kết với admin này.");
 
-            return $"Đã xóa admin (ID: {adminId}) thành công.";
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Reset RoleId của User về 2 
+                const int DefaultRoleId = 2;
+
+                user.RoleId = DefaultRoleId;
+                await _userRepo.UpdateAsync(user);
+                await _userRepo.SaveChangesAsync(); // Lưu thay đổi Role
+
+                // 2. Xóa bản ghi Admin
+                await _adminRepo.DeleteAsync(admin);
+                await _adminRepo.SaveChangesAsync(); // Lưu thay đổi xóa Admin
+
+                await transaction.CommitAsync();
+
+                return $"Đã xóa admin (ID: {adminId}) và cập nhật Role của User (ID: {admin.UserId}) về RoleId {DefaultRoleId} thành công.";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                // Log lỗi chi tiết nếu cần
+                Console.WriteLine($"Lỗi khi xóa Admin và reset Role: {ex.Message}");
+                throw new InvalidOperationException("Xảy ra lỗi trong quá trình xóa Admin và cập nhật Role.", ex);
+            }
         }
     }
 }

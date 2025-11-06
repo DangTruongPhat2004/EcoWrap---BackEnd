@@ -13,14 +13,19 @@ namespace EcoWrap.BLL.Services
         private readonly IInventoryRepository _inventoryRepo;
         private readonly IProductRepository _productRepo;
         private readonly IWarehouseRepository _warehouseRepo;
-
+        private readonly ISellerRepository _sellerRepo;
+        private readonly EcoWrapDbContext _dbContext;
         public InventoryService(IInventoryRepository inventoryRepo,
                                 IProductRepository productRepo,
-                                IWarehouseRepository warehouseRepo)
+                                IWarehouseRepository warehouseRepo,
+                                ISellerRepository sellerRepo,
+                                EcoWrapDbContext dbContext)
         {
             _inventoryRepo = inventoryRepo;
             _productRepo = productRepo;
             _warehouseRepo = warehouseRepo;
+            _sellerRepo = sellerRepo;
+            _dbContext = dbContext;
         }
 
         // -------------------- [CREATE INVENTORY] --------------------
@@ -74,6 +79,27 @@ namespace EcoWrap.BLL.Services
         public async Task<Inventory?> GetByIdAsync(int id)
         {
             return await _inventoryRepo.GetByIdAsync(id);
+        }
+
+        // -------------------- [GET MY INVENTORY] --------------------
+        public async Task<IEnumerable<Inventory>> GetMyInventoryAsync(int userId)
+        {
+            // CẦN THIẾT: Hàm GetByUserIdAsync phải có trong ISellerRepository
+            var seller = await _sellerRepo.GetByUserIdAsync(userId)
+                ?? throw new InvalidOperationException("Người dùng này không có vai trò Seller.");
+
+            // Lấy danh sách ProductId thuộc về Seller này (Dùng hàm đã có: GetAllBySellerIdAsync)
+            var sellerProducts = await _productRepo.GetAllBySellerIdAsync(seller.SellerId);
+            var productIds = sellerProducts.Select(p => p.ProductId).ToList();
+
+            if (!productIds.Any())
+                return new List<Inventory>();
+
+            // TỐI ƯU: Sử dụng hàm mới để lọc ở cấp độ Database
+            // CẦN THIẾT: Hàm GetInventoriesByProductIdsAsync phải có trong IInventoryRepository
+            var myInventories = await _inventoryRepo.GetInventoriesByProductIdsAsync(productIds);
+
+            return myInventories;
         }
 
         // -------------------- [UPDATE INVENTORY] --------------------

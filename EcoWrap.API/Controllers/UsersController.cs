@@ -65,11 +65,11 @@ namespace EcoWrap.API.Controllers
 
             bool isAdmin = User.IsInRole("Admin");
 
-            if (!isAdmin && currentUserId != id)
-            {
-                // Nếu không phải Admin và không phải đang xem profile của chính mình -> Forbidden
-                return Forbid(); // Trả về 403 Forbidden
-            }
+            //if (!isAdmin && currentUserId != id)
+            //{
+            //    // Nếu không phải Admin và không phải đang xem profile của chính mình -> Forbidden
+            //    return Forbid(); // Trả về 403 Forbidden
+            //}
 
             try
             {

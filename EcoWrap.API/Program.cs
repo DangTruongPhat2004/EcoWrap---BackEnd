@@ -242,7 +242,7 @@ namespace EcoWrap.API
             builder.Services.AddCors(opt =>
             {
                 opt.AddPolicy("chat", p => p
-                    .WithOrigins("http://localhost:5173", "http://localhost:3000")
+                    .WithOrigins("http://localhost:5173", "http://localhost:3000", "https://ecowrap.vercel.app")
                     .AllowAnyHeader().AllowAnyMethod().AllowCredentials());
             });
 
@@ -320,7 +320,7 @@ namespace EcoWrap.API
                 app.UseSwaggerUI();
             //}
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             // Use the general DevCors policy first
             app.UseCors(DevCors);

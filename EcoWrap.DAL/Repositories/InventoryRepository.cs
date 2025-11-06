@@ -133,5 +133,23 @@ namespace EcoWrap.DAL.Repositories
             inventory.LastUpdated = DateTime.UtcNow.AddHours(7);
             _context.Inventories.Update(inventory);
         }
+
+        public async Task<IEnumerable<Inventory>> GetInventoriesByProductIdsAsync(IEnumerable<string> productIds)
+        {
+            // Kiểm tra list ProductIds nếu rỗng để tránh truy vấn không cần thiết
+            if (productIds == null || !productIds.Any())
+            {
+                return Enumerable.Empty<Inventory>();
+            }
+
+            // Sử dụng .Where(i => productIds.Contains(i.ProductId)) 
+            // Entity Framework sẽ dịch thành SQL: WHERE ProductId IN ('P001', 'P002', ...)
+            return await _context.Inventories
+                .Where(i => productIds.Contains(i.ProductId))
+                // Nên include Warehouse nếu bạn muốn hiển thị tên kho/địa chỉ trong chi tiết tồn kho
+                .Include(i => i.Warehouse)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

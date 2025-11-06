@@ -9,7 +9,7 @@ namespace EcoWrap.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Seller")]
+    [Authorize]
     public class InventoryController : ControllerBase
     {
         private readonly IInventoryService _inventoryService;
@@ -19,6 +19,7 @@ namespace EcoWrap.API.Controllers
             _inventoryService = inventoryService;
         }
 
+        [Authorize(Roles = "Seller")]
         [HttpPost("")]
         public async Task<IActionResult> Create([FromBody] CreatInventoryRequest request)
         {
@@ -37,6 +38,7 @@ namespace EcoWrap.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -44,6 +46,7 @@ namespace EcoWrap.API.Controllers
             return Ok(inventories);
         }
 
+        [Authorize(Roles = "Admin, Seller")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -52,6 +55,32 @@ namespace EcoWrap.API.Controllers
             return Ok(inventory);
         }
 
+        [Authorize(Roles = "Admin, Seller")]
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyInventory()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst("id")?.Value;
+                if (!int.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized("UserId không hợp lệ.");
+                }
+
+                var inventories = await _inventoryService.GetMyInventoryAsync(userId);
+                return Ok(inventories);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi nội bộ server khi lấy tồn kho.", detail = ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "Admin, Seller")]
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateInventoryRequest request)
         {
@@ -66,6 +95,7 @@ namespace EcoWrap.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin, Seller")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

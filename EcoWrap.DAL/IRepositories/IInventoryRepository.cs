@@ -13,9 +13,8 @@ namespace EcoWrap.DAL.IRepositories
         Task DeleteAsync(Inventory inventory);
         Task SaveChangesAsync();
         Task<Inventory?> GetByProductAndWarehouseAsync(string productId, int warehouseId);
-
         Task<bool> DecreaseStockAcrossWarehousesAsync(string productId, int quantityToDecrease);
-
         Task IncreaseStockInFirstWarehouseAsync(string productId, int quantityToIncrease);
+        Task<IEnumerable<Inventory>> GetInventoriesByProductIdsAsync(IEnumerable<string> productIds);
     }
 }
