@@ -91,9 +91,14 @@ namespace EcoWrap.BLL.Services
                     Items = cartItems.Select(i => new
                     {
                         i.CartItemId,
+                        i.CartId,
                         i.ProductId,
+                        ProductName = i.Product?.ProductName,
+                        ProductPrice = i.Product?.ProductPrice,
+                        ImageFile = i.Product?.ImageFile,
                         i.Quantity,
-                        i.CartItemPrice
+                        i.CartItemPrice,
+                        i.DesignFile,
                     })
                 });
             }
@@ -133,10 +138,14 @@ namespace EcoWrap.BLL.Services
                     Items = cartItems.Select(i => new
                     {
                         i.CartItemId,
+                        i.CartId,
                         i.ProductId,
                         ProductName = i.Product?.ProductName,
+                        ProductPrice = i.Product?.ProductPrice,
+                        ImageFile = i.Product?.ImageFile,
                         i.Quantity,
-                        i.CartItemPrice
+                        i.CartItemPrice,
+                        i.DesignFile,
                     })
                 }
             };

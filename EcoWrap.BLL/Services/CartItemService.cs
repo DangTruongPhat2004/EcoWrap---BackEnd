@@ -146,10 +146,12 @@ namespace EcoWrap.BLL.Services
                     cartItem.CartItemId,
                     cartItem.CartId,
                     cartItem.ProductId,
+                    product.ProductName,
+                    product.ImageFile,
                     product.ProductPrice,
                     cartItem.Quantity,
                     cartItem.CartItemPrice,
-                    cartItem.DesignFile
+                    cartItem.DesignFile,
                 }
             };
         }
@@ -206,9 +208,12 @@ namespace EcoWrap.BLL.Services
                     cartItem.CartItemId,
                     cartItem.CartId,
                     cartItem.ProductId,
+                    product.ProductName,
+                    product.ImageFile,
                     product.ProductPrice,
                     cartItem.Quantity,
-                    cartItem.CartItemPrice
+                    cartItem.CartItemPrice,
+                    cartItem.DesignFile,
                 }
             };
         }
